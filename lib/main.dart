@@ -10,13 +10,20 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await AffirmationService.initialize();
   await NotificationService.initialize();
-  
+
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
+      systemNavigationBarColor: Colors.transparent,
+      systemNavigationBarDividerColor: Colors.transparent,
     ),
   );
-  
+
+  // Hide bottom navigation bar
+  SystemChrome.setEnabledSystemUIMode(
+    SystemUiMode.edgeToEdge,
+  );
+
   runApp(const MyApp());
 }
 
@@ -34,7 +41,7 @@ class MyApp extends StatelessWidget {
         fontFamily: 'Georgia',
         textTheme: const TextTheme(
           displayLarge: TextStyle(
-            fontSize: 28, 
+            fontSize: 28,
             fontWeight: FontWeight.bold,
             color: Colors.black87,
             height: 1.4,
