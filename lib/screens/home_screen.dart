@@ -209,12 +209,8 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
-    final dragThreshold = screenHeight * 0.3; // 30% of screen height
-    
-    // Calculate the opacity for the current, next and previous screens
-    final currentOpacity = isDragging ? 1.0 - (dragDistance / dragThreshold).clamp(0.0, 1.0) : 1.0;
-    final nextOpacity = isDragging && isDraggingUp ? (dragDistance / dragThreshold).clamp(0.0, 1.0) : 0.0;
-    final previousOpacity = isDragging && !isDraggingUp ? (dragDistance / dragThreshold).clamp(0.0, 1.0) : 0.0;
+    final screenWidth = MediaQuery.of(context).size.width;
+    final dragThreshold = screenHeight * 0.4; // 40% of screen height for card transition
     
     return Scaffold(
       key: _scaffoldKey,
@@ -223,160 +219,159 @@ class _HomeScreenState extends State<HomeScreen> {
           ? const Center(child: CircularProgressIndicator())
           : Stack(
               children: [
-                // Swipeable content area
-                GestureDetector(
-                  onVerticalDragStart: (details) {
-                    setState(() {
-                      isDragging = true;
-                      dragDistance = 0;
-                    });
-                  },
-                  onVerticalDragUpdate: (details) {
-                    if (details.delta.dy < 0) {
-                      // Dragging up (next)
-                      setState(() {
-                        isDraggingUp = true;
-                        dragDistance += -details.delta.dy;
-                      });
-                    } else if (details.delta.dy > 0 && _history.length > 1) {
-                      // Dragging down (previous)
-                      setState(() {
-                        isDraggingUp = false;
-                        dragDistance += details.delta.dy;
-                      });
-                    }
-                  },
-                  onVerticalDragEnd: (details) {
-                    if (isDraggingUp) {
-                      // Swiping up to next
-                      if (dragDistance > dragThreshold || 
-                          (details.primaryVelocity != null && details.primaryVelocity! < -1500)) {
-                        _goToNext();
-                      } else {
-                        setState(() {
-                          dragDistance = 0;
-                          isDragging = false;
-                        });
-                      }
-                    } else {
-                      // Swiping down to previous
-                      if (dragDistance > dragThreshold || 
-                          (details.primaryVelocity != null && details.primaryVelocity! > 1500)) {
-                        _goToPrevious();
-                      } else {
-                        setState(() {
-                          dragDistance = 0;
-                          isDragging = false;
-                        });
-                      }
-                    }
-                  },
-                  child: Stack(
-                    children: [
-                      // Previous affirmation (visible when swiping down)
-                      if (previousAffirmation != null)
-                        Positioned.fill(
-                          child: Opacity(
-                            opacity: previousOpacity,
-                            child: Container(
-                              color: previousColor,
-                              child: SafeArea(
-                                child: Column(
-                                  children: [
-                                    Spacer(flex: 1), // Space for app bar
-                                    Expanded(
-                                      flex: 9,
-                                      child: Center(
-                                        child: Padding(
-                                          padding: const EdgeInsets.symmetric(horizontal: 40.0),
-                                          child: Text(
-                                            previousAffirmation!.text,
-                                            style: Theme.of(context).textTheme.displayLarge,
-                                            textAlign: TextAlign.center,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                    _buildBottomBar(previousAffirmation!),
-                                  ],
+                // Next card (positioned under current card)
+                if (nextAffirmation != null)
+                  Positioned(
+                    top: isDraggingUp ? screenHeight - dragDistance : 0,
+                    left: 0,
+                    right: 0,
+                    height: screenHeight,
+                    child: Container(
+                      color: nextColor,
+                      child: Column(
+                        children: [
+                          SizedBox(height: MediaQuery.of(context).padding.top),
+                          SizedBox(height: kToolbarHeight), // Space for app bar
+                          Expanded(
+                            child: Center(
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 40.0),
+                                child: Text(
+                                  nextAffirmation!.text,
+                                  style: Theme.of(context).textTheme.displayLarge,
+                                  textAlign: TextAlign.center,
                                 ),
                               ),
                             ),
                           ),
-                        ),
-                        
-                      // Next affirmation (visible when swiping up)
-                      if (nextAffirmation != null)
-                        Positioned.fill(
-                          child: Opacity(
-                            opacity: nextOpacity,
-                            child: Container(
-                              color: nextColor,
-                              child: SafeArea(
-                                child: Column(
-                                  children: [
-                                    Spacer(flex: 1), // Space for app bar
-                                    Expanded(
-                                      flex: 9,
-                                      child: Center(
-                                        child: Padding(
-                                          padding: const EdgeInsets.symmetric(horizontal: 40.0),
-                                          child: Text(
-                                            nextAffirmation!.text,
-                                            style: Theme.of(context).textTheme.displayLarge,
-                                            textAlign: TextAlign.center,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                    _buildBottomBar(nextAffirmation!),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                        
-                      // Current affirmation
-                      Positioned.fill(
-                        child: Transform.translate(
-                          offset: Offset(0, isDraggingUp ? -dragDistance : dragDistance),
-                          child: Opacity(
-                            opacity: currentOpacity,
-                            child: Container(
-                              color: currentColor,
-                              child: SafeArea(
-                                child: Column(
-                                  children: [
-                                    Spacer(flex: 1), // Space for app bar
-                                    Expanded(
-                                      flex: 9,
-                                      child: Center(
-                                        child: Padding(
-                                          padding: const EdgeInsets.symmetric(horizontal: 40.0),
-                                          child: Text(
-                                            currentAffirmation.text,
-                                            style: Theme.of(context).textTheme.displayLarge,
-                                            textAlign: TextAlign.center,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                    _buildBottomBar(currentAffirmation),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
+                          _buildBottomBar(nextAffirmation!),
+                        ],
                       ),
-                    ],
+                    ),
+                  ),
+                
+                // Previous card (positioned under current card)
+                if (previousAffirmation != null)
+                  Positioned(
+                    top: !isDraggingUp ? -screenHeight + dragDistance : 0,
+                    left: 0,
+                    right: 0,
+                    height: screenHeight,
+                    child: Container(
+                      color: previousColor,
+                      child: Column(
+                        children: [
+                          SizedBox(height: MediaQuery.of(context).padding.top),
+                          SizedBox(height: kToolbarHeight), // Space for app bar
+                          Expanded(
+                            child: Center(
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 40.0),
+                                child: Text(
+                                  previousAffirmation!.text,
+                                  style: Theme.of(context).textTheme.displayLarge,
+                                  textAlign: TextAlign.center,
+                                ),
+                              ),
+                            ),
+                          ),
+                          _buildBottomBar(previousAffirmation!),
+                        ],
+                      ),
+                    ),
+                  ),
+                
+                // Current card with gesture detector
+                Positioned.fill(
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onVerticalDragStart: (details) {
+                      setState(() {
+                        isDragging = true;
+                        dragDistance = 0;
+                      });
+                    },
+                    onVerticalDragUpdate: (details) {
+                      if (details.delta.dy < 0) {
+                        // Dragging up (next)
+                        setState(() {
+                          isDraggingUp = true;
+                          dragDistance += -details.delta.dy;
+                        });
+                      } else if (details.delta.dy > 0 && _history.length > 1) {
+                        // Dragging down (previous)
+                        setState(() {
+                          isDraggingUp = false;
+                          dragDistance += details.delta.dy;
+                        });
+                      }
+                    },
+                    onVerticalDragEnd: (details) {
+                      if (isDraggingUp) {
+                        // Swiping up to next
+                        if (dragDistance > dragThreshold || 
+                            (details.primaryVelocity != null && details.primaryVelocity! < -1500)) {
+                          _goToNext();
+                        } else {
+                          setState(() {
+                            dragDistance = 0;
+                            isDragging = false;
+                          });
+                        }
+                      } else {
+                        // Swiping down to previous
+                        if (dragDistance > dragThreshold || 
+                            (details.primaryVelocity != null && details.primaryVelocity! > 1500)) {
+                          _goToPrevious();
+                        } else {
+                          setState(() {
+                            dragDistance = 0;
+                            isDragging = false;
+                          });
+                        }
+                      }
+                    },
+                    child: Container(
+                      transform: Matrix4.translationValues(
+                        0, 
+                        isDragging ? (isDraggingUp ? -dragDistance : dragDistance) : 0, 
+                        0
+                      ),
+                      color: currentColor,
+                      child: Column(
+                        children: [
+                          SizedBox(height: MediaQuery.of(context).padding.top), 
+                          const SizedBox(height: kToolbarHeight), // Space for app bar
+                          Expanded(
+                            child: Center(
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 40.0),
+                                child: Text(
+                                  currentAffirmation.text,
+                                  style: Theme.of(context).textTheme.displayLarge,
+                                  textAlign: TextAlign.center,
+                                ),
+                              ),
+                            ),
+                          ),
+                          _buildBottomBar(currentAffirmation),
+                        ],
+                      ),
+                    ),
                   ),
                 ),
                 
                 // Fixed app bar that doesn't move with swipe
-                SafeArea(
-                  child: _buildAppBar(),
+                Positioned(
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  child: Material(
+                    color: Colors.transparent,
+                    child: SafeArea(
+                      child: _buildAppBar(),
+                    ),
+                  ),
                 ),
               ],
             ),
