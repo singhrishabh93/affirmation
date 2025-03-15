@@ -221,151 +221,164 @@ class _HomeScreenState extends State<HomeScreen> {
       drawer: const CustomDrawer(),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
-          : GestureDetector(
-              onVerticalDragStart: (details) {
-                setState(() {
-                  isDragging = true;
-                  dragDistance = 0;
-                });
-              },
-              onVerticalDragUpdate: (details) {
-                if (details.delta.dy < 0) {
-                  // Dragging up (next)
-                  setState(() {
-                    isDraggingUp = true;
-                    dragDistance += -details.delta.dy;
-                  });
-                } else if (details.delta.dy > 0 && _history.length > 1) {
-                  // Dragging down (previous)
-                  setState(() {
-                    isDraggingUp = false;
-                    dragDistance += details.delta.dy;
-                  });
-                }
-              },
-              onVerticalDragEnd: (details) {
-                if (isDraggingUp) {
-                  // Swiping up to next
-                  if (dragDistance > dragThreshold || 
-                      (details.primaryVelocity != null && details.primaryVelocity! < -1500)) {
-                    _goToNext();
-                  } else {
+          : Stack(
+              children: [
+                // Swipeable content area
+                GestureDetector(
+                  onVerticalDragStart: (details) {
                     setState(() {
+                      isDragging = true;
                       dragDistance = 0;
-                      isDragging = false;
                     });
-                  }
-                } else {
-                  // Swiping down to previous
-                  if (dragDistance > dragThreshold || 
-                      (details.primaryVelocity != null && details.primaryVelocity! > 1500)) {
-                    _goToPrevious();
-                  } else {
-                    setState(() {
-                      dragDistance = 0;
-                      isDragging = false;
-                    });
-                  }
-                }
-              },
-              child: Stack(
-                children: [
-                  // Previous affirmation (visible when swiping down)
-                  if (previousAffirmation != null)
-                    Positioned.fill(
-                      child: Opacity(
-                        opacity: previousOpacity,
-                        child: Container(
-                          color: previousColor,
-                          child: SafeArea(
-                            child: Column(
-                              children: [
-                                _buildAppBar(),
-                                Expanded(
-                                  child: Center(
-                                    child: Padding(
-                                      padding: const EdgeInsets.symmetric(horizontal: 40.0),
-                                      child: Text(
-                                        previousAffirmation!.text,
-                                        style: Theme.of(context).textTheme.displayLarge,
-                                        textAlign: TextAlign.center,
+                  },
+                  onVerticalDragUpdate: (details) {
+                    if (details.delta.dy < 0) {
+                      // Dragging up (next)
+                      setState(() {
+                        isDraggingUp = true;
+                        dragDistance += -details.delta.dy;
+                      });
+                    } else if (details.delta.dy > 0 && _history.length > 1) {
+                      // Dragging down (previous)
+                      setState(() {
+                        isDraggingUp = false;
+                        dragDistance += details.delta.dy;
+                      });
+                    }
+                  },
+                  onVerticalDragEnd: (details) {
+                    if (isDraggingUp) {
+                      // Swiping up to next
+                      if (dragDistance > dragThreshold || 
+                          (details.primaryVelocity != null && details.primaryVelocity! < -1500)) {
+                        _goToNext();
+                      } else {
+                        setState(() {
+                          dragDistance = 0;
+                          isDragging = false;
+                        });
+                      }
+                    } else {
+                      // Swiping down to previous
+                      if (dragDistance > dragThreshold || 
+                          (details.primaryVelocity != null && details.primaryVelocity! > 1500)) {
+                        _goToPrevious();
+                      } else {
+                        setState(() {
+                          dragDistance = 0;
+                          isDragging = false;
+                        });
+                      }
+                    }
+                  },
+                  child: Stack(
+                    children: [
+                      // Previous affirmation (visible when swiping down)
+                      if (previousAffirmation != null)
+                        Positioned.fill(
+                          child: Opacity(
+                            opacity: previousOpacity,
+                            child: Container(
+                              color: previousColor,
+                              child: SafeArea(
+                                child: Column(
+                                  children: [
+                                    Spacer(flex: 1), // Space for app bar
+                                    Expanded(
+                                      flex: 9,
+                                      child: Center(
+                                        child: Padding(
+                                          padding: const EdgeInsets.symmetric(horizontal: 40.0),
+                                          child: Text(
+                                            previousAffirmation!.text,
+                                            style: Theme.of(context).textTheme.displayLarge,
+                                            textAlign: TextAlign.center,
+                                          ),
+                                        ),
                                       ),
                                     ),
-                                  ),
+                                    _buildBottomBar(previousAffirmation!),
+                                  ],
                                 ),
-                                _buildBottomBar(previousAffirmation!),
-                              ],
+                              ),
+                            ),
+                          ),
+                        ),
+                        
+                      // Next affirmation (visible when swiping up)
+                      if (nextAffirmation != null)
+                        Positioned.fill(
+                          child: Opacity(
+                            opacity: nextOpacity,
+                            child: Container(
+                              color: nextColor,
+                              child: SafeArea(
+                                child: Column(
+                                  children: [
+                                    Spacer(flex: 1), // Space for app bar
+                                    Expanded(
+                                      flex: 9,
+                                      child: Center(
+                                        child: Padding(
+                                          padding: const EdgeInsets.symmetric(horizontal: 40.0),
+                                          child: Text(
+                                            nextAffirmation!.text,
+                                            style: Theme.of(context).textTheme.displayLarge,
+                                            textAlign: TextAlign.center,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    _buildBottomBar(nextAffirmation!),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        
+                      // Current affirmation
+                      Positioned.fill(
+                        child: Transform.translate(
+                          offset: Offset(0, isDraggingUp ? -dragDistance : dragDistance),
+                          child: Opacity(
+                            opacity: currentOpacity,
+                            child: Container(
+                              color: currentColor,
+                              child: SafeArea(
+                                child: Column(
+                                  children: [
+                                    Spacer(flex: 1), // Space for app bar
+                                    Expanded(
+                                      flex: 9,
+                                      child: Center(
+                                        child: Padding(
+                                          padding: const EdgeInsets.symmetric(horizontal: 40.0),
+                                          child: Text(
+                                            currentAffirmation.text,
+                                            style: Theme.of(context).textTheme.displayLarge,
+                                            textAlign: TextAlign.center,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    _buildBottomBar(currentAffirmation),
+                                  ],
+                                ),
+                              ),
                             ),
                           ),
                         ),
                       ),
-                    ),
-                    
-                  // Next affirmation (visible when swiping up)
-                  if (nextAffirmation != null)
-                    Positioned.fill(
-                      child: Opacity(
-                        opacity: nextOpacity,
-                        child: Container(
-                          color: nextColor,
-                          child: SafeArea(
-                            child: Column(
-                              children: [
-                                _buildAppBar(),
-                                Expanded(
-                                  child: Center(
-                                    child: Padding(
-                                      padding: const EdgeInsets.symmetric(horizontal: 40.0),
-                                      child: Text(
-                                        nextAffirmation!.text,
-                                        style: Theme.of(context).textTheme.displayLarge,
-                                        textAlign: TextAlign.center,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                _buildBottomBar(nextAffirmation!),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                    
-                  // Current affirmation
-                  Positioned.fill(
-                    child: Transform.translate(
-                      offset: Offset(0, isDraggingUp ? -dragDistance : dragDistance),
-                      child: Opacity(
-                        opacity: currentOpacity,
-                        child: Container(
-                          color: currentColor,
-                          child: SafeArea(
-                            child: Column(
-                              children: [
-                                _buildAppBar(),
-                                Expanded(
-                                  child: Center(
-                                    child: Padding(
-                                      padding: const EdgeInsets.symmetric(horizontal: 40.0),
-                                      child: Text(
-                                        currentAffirmation.text,
-                                        style: Theme.of(context).textTheme.displayLarge,
-                                        textAlign: TextAlign.center,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                _buildBottomBar(currentAffirmation),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
+                    ],
                   ),
-                ],
-              ),
+                ),
+                
+                // Fixed app bar that doesn't move with swipe
+                SafeArea(
+                  child: _buildAppBar(),
+                ),
+              ],
             ),
     );
   }
