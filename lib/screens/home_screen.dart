@@ -586,14 +586,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         const SizedBox(height: 25),
                         ElevatedButton(
                           onPressed: () {
-                            if (currentCategory != null) {
-                              setState(() {
-                                currentCategory = null;
-                              });
-                              _loadAffirmations();
-                            } else {
                               _showCategoriesBottomSheet();
-                            }
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: textColor,
