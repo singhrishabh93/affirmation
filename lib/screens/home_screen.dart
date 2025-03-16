@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'package:affirmation/constants/app_colors.dart'; // Import the colors file
+import 'package:affirmation/screens/profile_screen.dart';
 import 'package:affirmation/widgets/category_bottom_sheet.dart';
 import 'package:feather_icons/feather_icons.dart';
 import 'package:flutter/material.dart';
@@ -586,7 +587,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         const SizedBox(height: 25),
                         ElevatedButton(
                           onPressed: () {
-                              _showCategoriesBottomSheet();
+                            _showCategoriesBottomSheet();
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: textColor,
@@ -659,7 +660,13 @@ class _HomeScreenState extends State<HomeScreen> {
               icon: const Icon(FeatherIcons.user),
               color: Colors.black87,
               onPressed: () {
-                // Premium features or store
+                // Replace this with:
+                showModalBottomSheet(
+                  context: context,
+                  isScrollControlled: true,
+                  isDismissible: true,
+                  builder: (context) => const ProfileScreen(),
+                );
               },
             ),
           ),
@@ -813,7 +820,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
               ),
-              
             ],
           ),
         ),

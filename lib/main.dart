@@ -1,3 +1,4 @@
+import 'package:affirmation/screens/profile_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -54,11 +55,12 @@ class MyApp extends StatelessWidget {
           ),
         ),
       ),
-      home: const SplashScreen(), // Use SplashScreen as initial screen
+      home: const SplashScreen(), // Use SplashScreen as inirtial screen
       routes: {
         '/home': (context) => const HomeScreen(),
         '/favorites': (context) => const FavoritesScreen(),
         '/settings': (context) => const SettingsScreen(),
+        '/profile': (context) => const ProfileScreen(), // Add this line
       },
     );
   }
