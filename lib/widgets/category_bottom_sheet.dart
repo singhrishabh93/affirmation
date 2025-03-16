@@ -22,29 +22,30 @@ class CategoryBottomSheet extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Padding(
-              padding: const EdgeInsets.all(16.0),
+              padding: const EdgeInsets.fromLTRB(16, 30, 0, 0),
               child: InkWell(
                 onTap: () => Navigator.pop(context),
                 child: Text(
                   'Close',
                   style: GoogleFonts.merriweather(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
               ),
             ),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
               child: Text(
                 'Categories',
                 style: GoogleFonts.merriweather(
-                              fontSize: 32,
-                              fontWeight: FontWeight.bold,
-                  ),
+                  fontSize: 32,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 8),
             Expanded(
               child: SingleChildScrollView(
                 child: Column(

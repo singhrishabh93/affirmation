@@ -1,8 +1,13 @@
+import 'dart:io';
+import 'dart:typed_data';
+import 'dart:ui' as ui;
 import 'package:affirmation/constants/app_colors.dart'; // Import the colors file
 import 'package:affirmation/widgets/category_bottom_sheet.dart';
 import 'package:feather_icons/feather_icons.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'dart:math';
 import 'dart:collection';
@@ -18,6 +23,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  final GlobalKey _screenshotKey = GlobalKey();
   late Affirmation currentAffirmation;
   Affirmation? nextAffirmation;
   Affirmation? previousAffirmation;
@@ -25,7 +31,8 @@ class _HomeScreenState extends State<HomeScreen> {
   List<Affirmation> affirmations = [];
   List<Affirmation> filteredAffirmations = []; // Track filtered affirmations
   String? currentCategory;
-  bool hasMoreAffirmations = true; // Track if there are more affirmations to show
+  bool hasMoreAffirmations =
+      true; // Track if there are more affirmations to show
 
   // History stack to track visited affirmations
   final Queue<Affirmation> _history = Queue<Affirmation>();
@@ -104,7 +111,8 @@ class _HomeScreenState extends State<HomeScreen> {
     });
 
     affirmations = await AffirmationService.getAffirmations();
-    filteredAffirmations = affirmations; // Initialize filtered list with all affirmations
+    filteredAffirmations =
+        affirmations; // Initialize filtered list with all affirmations
 
     // Select initial affirmation
     if (affirmations.isNotEmpty) {
@@ -117,7 +125,7 @@ class _HomeScreenState extends State<HomeScreen> {
       // Prepare next and previous affirmations
       _prepareNextAffirmation();
       _preparePreviousAffirmation();
-      
+
       hasMoreAffirmations = filteredAffirmations.length > 1;
     } else {
       // Handle case when there are no affirmations
@@ -230,20 +238,51 @@ class _HomeScreenState extends State<HomeScreen> {
       currentAffirmation = updatedAffirmation;
 
       // Also update in our local lists
-      final index = affirmations.indexWhere((a) => a.id == updatedAffirmation.id);
+      final index =
+          affirmations.indexWhere((a) => a.id == updatedAffirmation.id);
       if (index != -1) {
         affirmations[index] = updatedAffirmation;
       }
-      
-      final filteredIndex = filteredAffirmations.indexWhere((a) => a.id == updatedAffirmation.id);
+
+      final filteredIndex =
+          filteredAffirmations.indexWhere((a) => a.id == updatedAffirmation.id);
       if (filteredIndex != -1) {
         filteredAffirmations[filteredIndex] = updatedAffirmation;
       }
     });
   }
 
-  void _shareAffirmation() {
-    Share.share(currentAffirmation.text);
+  Future<void> _shareAffirmation() async {
+    try {
+      // Capture screenshot
+      final RenderRepaintBoundary boundary = _screenshotKey.currentContext!
+          .findRenderObject() as RenderRepaintBoundary;
+      final ui.Image image = await boundary.toImage(pixelRatio: 3.0);
+      final ByteData? byteData =
+          await image.toByteData(format: ui.ImageByteFormat.png);
+
+      if (byteData != null) {
+        final Uint8List pngBytes = byteData.buffer.asUint8List();
+
+        // Save to temporary file
+        final tempDir = await getTemporaryDirectory();
+        final file = File('${tempDir.path}/affirmation.png');
+        await file.writeAsBytes(pngBytes);
+
+        // Share the image file
+        await Share.shareXFiles(
+          [XFile(file.path)],
+          text: currentAffirmation.text,
+        );
+      } else {
+        // Fallback to text-only sharing if image capture fails
+        Share.share(currentAffirmation.text);
+      }
+    } catch (e) {
+      // Fallback to text-only sharing if any error occurs
+      Share.share(currentAffirmation.text);
+      print('Error taking screenshot: $e');
+    }
   }
 
   void _showHeartAnimation() {
@@ -303,8 +342,10 @@ class _HomeScreenState extends State<HomeScreen> {
                           color: nextColor,
                           child: Column(
                             children: [
-                              SizedBox(height: MediaQuery.of(context).padding.top),
-                              SizedBox(height: kToolbarHeight), // Space for app bar
+                              SizedBox(
+                                  height: MediaQuery.of(context).padding.top),
+                              SizedBox(
+                                  height: kToolbarHeight), // Space for app bar
                               Expanded(
                                 child: Center(
                                   child: Padding(
@@ -335,8 +376,10 @@ class _HomeScreenState extends State<HomeScreen> {
                           color: previousColor,
                           child: Column(
                             children: [
-                              SizedBox(height: MediaQuery.of(context).padding.top),
-                              SizedBox(height: kToolbarHeight), // Space for app bar
+                              SizedBox(
+                                  height: MediaQuery.of(context).padding.top),
+                              SizedBox(
+                                  height: kToolbarHeight), // Space for app bar
                               Expanded(
                                 child: Center(
                                   child: Padding(
@@ -344,13 +387,15 @@ class _HomeScreenState extends State<HomeScreen> {
                                         horizontal: 40.0),
                                     child: Text(
                                       previousAffirmation!.text,
-                                      style: getAffirmationTextStyle(previousColor),
+                                      style: getAffirmationTextStyle(
+                                          previousColor),
                                       textAlign: TextAlign.center,
                                     ),
                                   ),
                                 ),
                               ),
-                              _buildBottomBar(previousAffirmation!, previousColor),
+                              _buildBottomBar(
+                                  previousAffirmation!, previousColor),
                             ],
                           ),
                         ),
@@ -373,7 +418,8 @@ class _HomeScreenState extends State<HomeScreen> {
                               isDraggingUp = true;
                               dragDistance += -details.delta.dy;
                             });
-                          } else if (details.delta.dy > 0 && _history.length > 1) {
+                          } else if (details.delta.dy > 0 &&
+                              _history.length > 1) {
                             // Dragging down (previous)
                             setState(() {
                               isDraggingUp = false;
@@ -413,24 +459,32 @@ class _HomeScreenState extends State<HomeScreen> {
                           transform: Matrix4.translationValues(
                               0,
                               isDragging
-                                  ? (isDraggingUp ? -dragDistance : dragDistance)
+                                  ? (isDraggingUp
+                                      ? -dragDistance
+                                      : dragDistance)
                                   : 0,
                               0),
                           color: currentColor,
                           child: Column(
                             children: [
-                              SizedBox(height: MediaQuery.of(context).padding.top),
+                              SizedBox(
+                                  height: MediaQuery.of(context).padding.top),
                               const SizedBox(
                                   height: kToolbarHeight), // Space for app bar
                               Expanded(
-                                child: Center(
-                                  child: Padding(
+                                child: RepaintBoundary(
+                                  key: _screenshotKey,
+                                  child: Container(
+                                    color: currentColor,
                                     padding: const EdgeInsets.symmetric(
                                         horizontal: 40.0),
-                                    child: Text(
-                                      currentAffirmation.text,
-                                      style: getAffirmationTextStyle(currentColor),
-                                      textAlign: TextAlign.center,
+                                    child: Center(
+                                      child: Text(
+                                        currentAffirmation.text,
+                                        style: getAffirmationTextStyle(
+                                            currentColor),
+                                        textAlign: TextAlign.center,
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -487,7 +541,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildEmptyState() {
     final textColor = AppColors.getTextColorForBackground(currentColor);
-    
+
     return Container(
       color: currentColor,
       child: Stack(
@@ -553,7 +607,9 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                           ),
                           child: Text(
-                            currentCategory != null ? "View All Affirmations" : "Open Categories",
+                            currentCategory != null
+                                ? "View All Affirmations"
+                                : "Open Categories",
                             style: GoogleFonts.merriweather(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
@@ -647,7 +703,7 @@ class _HomeScreenState extends State<HomeScreen> {
     // Clear current lists
     _history.clear();
     _forward.clear();
-    
+
     // Filter based on category
     if (category == "Favorites") {
       filteredAffirmations =
@@ -712,11 +768,11 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildBottomBar(Affirmation affirmation, Color backgroundColor) {
     final textColor = AppColors.getTextColorForBackground(backgroundColor);
-    
+
     return Column(
       children: [
         Padding(
-          padding: const EdgeInsets.only(bottom: 40.0),
+          padding: const EdgeInsets.only(bottom: 60.0),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -764,6 +820,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
               ),
+              
             ],
           ),
         ),
