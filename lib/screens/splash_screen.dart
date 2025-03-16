@@ -1,4 +1,6 @@
 import 'package:affirmation/screens/Auth/signIn_screen.dart';
+import 'package:affirmation/screens/home_screen.dart';
+import 'package:affirmation/services/authentication_service.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -19,7 +21,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
     
     // Initialize animation controller
     _controller = AnimationController(
-      duration: const Duration(milliseconds: 1000),
+      duration: const Duration(milliseconds: 1500),
       vsync: this,
     );
     
@@ -31,20 +33,33 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
       ),
     );
     
-    // Start animation after a delay
-    Future.delayed(const Duration(milliseconds: 1000), () {
-      _controller.forward();
-    });
+    // Check authentication state and navigate accordingly
+    _checkAuthState();
+  }
+  
+  Future<void> _checkAuthState() async {
+    // Delay briefly to show splash screen
+    await Future.delayed(const Duration(milliseconds: 1000));
+    
+    // Check if user is logged in
+    final bool isLoggedIn = await AuthService.isLoggedIn();
+    
+    // Start animation
+    _controller.forward();
     
     // Navigate when animation completes
     _controller.addStatusListener((status) {
       if (status == AnimationStatus.completed) {
-        Navigator.of(context).pushReplacement(
-          PageRouteBuilder(
-            pageBuilder: (_, __, ___) => const SignInScreen(), // Navigate to SignInScreen instead
-            transitionDuration: Duration.zero,
-          ),
-        );
+        if (mounted) {
+          Navigator.of(context).pushReplacement(
+            PageRouteBuilder(
+              pageBuilder: (_, __, ___) => isLoggedIn 
+                  ? const HomeScreen() 
+                  : const SignInScreen(),
+              transitionDuration: Duration.zero,
+            ),
+          );
+        }
       }
     });
   }

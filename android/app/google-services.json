@@ -14,6 +14,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "892960822118-i1k76g2m1o0mrlvhpen9ultj68dh4ttu.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.beyou.affirmation",
+            "certificate_hash": "581ef937f284d0fcbb6ee0f3ddd099779eeb51fe"
+          }
+        },
+        {
           "client_id": "892960822118-jql565epo93n1gt760mbjrfh2psussmi.apps.googleusercontent.com",
           "client_type": 3
         }

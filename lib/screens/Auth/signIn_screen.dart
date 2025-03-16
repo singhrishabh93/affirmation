@@ -1,17 +1,57 @@
 import 'package:affirmation/screens/home_screen.dart';
+import 'package:affirmation/services/authentication_service.dart';
 import 'package:affirmation/widgets/google_signin_button.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-class SignInScreen extends StatelessWidget {
+
+class SignInScreen extends StatefulWidget {
   const SignInScreen({Key? key}) : super(key: key);
 
+  @override
+  State<SignInScreen> createState() => _SignInScreenState();
+}
+
+class _SignInScreenState extends State<SignInScreen> {
+  bool _isLoading = false;
+
   // Handle Google sign-in
-  void _handleSignIn(BuildContext context) {
-    // In a real implementation, you would handle Google authentication here
-    // For now, we'll just navigate to the home screen
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (context) => const HomeScreen()),
-    );
+  Future<void> _handleSignIn() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final User? user = await AuthService.signInWithGoogle();
+      
+      if (user != null) {
+        // Navigate to home screen on successful sign in
+        if (mounted) {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (context) => const HomeScreen()),
+          );
+        }
+      } else {
+        // Sign in was canceled or failed
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Sign in failed. Please try again.')),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: ${e.toString()}')),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
   }
 
   @override
@@ -48,9 +88,11 @@ class SignInScreen extends StatelessWidget {
               const SizedBox(height: 80),
               
               // Google Sign-in Button
-              GoogleSignInButton(
-                onPressed: () => _handleSignIn(context),
-              ),
+              _isLoading
+                  ? const CircularProgressIndicator()
+                  : GoogleSignInButton(
+                      onPressed: _handleSignIn,
+                    ),
               
               const SizedBox(height: 24),
               

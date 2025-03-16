@@ -1,11 +1,49 @@
+import 'package:affirmation/services/authentication_service.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:affirmation/screens/Auth/signIn_screen.dart';
-import 'package:flutter/services.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends StatefulWidget {
   static const String routeName = '/profile';
   const ProfileScreen({Key? key}) : super(key: key);
+
+  @override
+  State<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
+  Map<String, dynamic>? userData;
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserData();
+  }
+
+  Future<void> _loadUserData() async {
+    final user = await AuthService.getCurrentUser();
+    setState(() {
+      userData = user;
+      isLoading = false;
+    });
+  }
+
+  Future<void> _signOut() async {
+    setState(() {
+      isLoading = true;
+    });
+    
+    await AuthService.signOut();
+    
+    if (mounted) {
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (context) => const SignInScreen()),
+        (route) => false,
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -14,183 +52,212 @@ class ProfileScreen extends StatelessWidget {
       width: MediaQuery.of(context).size.width,
       color: Colors.white,
       child: SafeArea(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Close button
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 30, 0, 0),
-              child: InkWell(
-                onTap: () => Navigator.pop(context),
-                child: Text(
-                  'Close',
-                  style: GoogleFonts.merriweather(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ),
-            
-            // Profile heading
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
-              child: Text(
-                'Profile',
-                style: GoogleFonts.merriweather(
-                  fontSize: 32,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-            
-            const SizedBox(height: 24),
-            
-            // Profile picture and name
-            Center(
-              child: Column(
+        child: isLoading 
+            ? const Center(child: CircularProgressIndicator())
+            : Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Container(
-                    width: 120,
-                    height: 120,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: const Color(0xFFD5EAE4),
-                      border: Border.all(
-                        color: Colors.white,
-                        width: 4,
+                  // Close button
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 30, 0, 0),
+                    child: InkWell(
+                      onTap: () => Navigator.pop(context),
+                      child: Text(
+                        'Close',
+                        style: GoogleFonts.merriweather(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.1),
-                          blurRadius: 10,
-                          offset: const Offset(0, 5),
+                    ),
+                  ),
+                  
+                  // Profile heading
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
+                    child: Text(
+                      'Profile',
+                      style: GoogleFonts.merriweather(
+                        fontSize: 32,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  
+                  const SizedBox(height: 24),
+                  
+                  // Profile picture and name
+                  Center(
+                    child: Column(
+                      children: [
+                        userData != null && userData!['photoURL'] != null
+                            ? Container(
+                                width: 120,
+                                height: 120,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: Colors.white,
+                                    width: 4,
+                                  ),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.1),
+                                      blurRadius: 10,
+                                      offset: const Offset(0, 5),
+                                    ),
+                                  ],
+                                ),
+                                child: ClipOval(
+                                  child: CachedNetworkImage(
+                                    imageUrl: userData!['photoURL'],
+                                    placeholder: (context, url) => const Center(
+                                      child: CircularProgressIndicator(),
+                                    ),
+                                    errorWidget: (context, url, error) => const Icon(
+                                      Icons.person,
+                                      size: 60,
+                                      color: Colors.black54,
+                                    ),
+                                    fit: BoxFit.cover,
+                                  ),
+                                ),
+                              )
+                            : Container(
+                                width: 120,
+                                height: 120,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: const Color(0xFFD5EAE4),
+                                  border: Border.all(
+                                    color: Colors.white,
+                                    width: 4,
+                                  ),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.1),
+                                      blurRadius: 10,
+                                      offset: const Offset(0, 5),
+                                    ),
+                                  ],
+                                ),
+                                child: const Center(
+                                  child: Icon(
+                                    Icons.person,
+                                    size: 60,
+                                    color: Colors.black54,
+                                  ),
+                                ),
+                              ),
+                        const SizedBox(height: 16),
+                        Text(
+                          userData?['displayName'] ?? 'User',
+                          style: GoogleFonts.merriweather(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          userData?['email'] ?? '',
+                          style: GoogleFonts.merriweather(
+                            fontSize: 16,
+                            color: Colors.black54,
+                          ),
                         ),
                       ],
                     ),
-                    child: const Center(
-                      child: Icon(
-                        Icons.person,
-                        size: 60,
-                        color: Colors.black54,
+                  ),
+                  
+                  const SizedBox(height: 48),
+                  
+                  // Options list
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: Column(
+                      children: [
+                        _buildProfileOption(
+                          context, 
+                          'Edit Profile', 
+                          Icons.edit_outlined,
+                          onTap: () {
+                            // Handle edit profile
+                          },
+                        ),
+                        const SizedBox(height: 16),
+                        _buildProfileOption(
+                          context, 
+                          'Notifications', 
+                          Icons.notifications_outlined,
+                          onTap: () {
+                            // Handle notifications
+                          },
+                        ),
+                        const SizedBox(height: 16),
+                        _buildProfileOption(
+                          context, 
+                          'Privacy Policy', 
+                          Icons.privacy_tip_outlined,
+                          onTap: () {
+                            // Handle privacy policy
+                          },
+                        ),
+                        const SizedBox(height: 16),
+                        _buildProfileOption(
+                          context, 
+                          'Terms of Service', 
+                          Icons.description_outlined,
+                          onTap: () {
+                            // Handle terms of service
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                  
+                  const Spacer(),
+                  
+                  // Sign out button
+                  Center(
+                    child: GestureDetector(
+                      onTap: _signOut,
+                      child: Container(
+                        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: Colors.black,
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        width: double.infinity,
+                        child: Center(
+                          child: Text(
+                            'Sign Out',
+                            style: GoogleFonts.merriweather(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w500,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
                       ),
                     ),
                   ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'John Doe',
-                    style: GoogleFonts.merriweather(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'john.doe@example.com',
-                    style: GoogleFonts.merriweather(
-                      fontSize: 16,
-                      color: Colors.black54,
+                  
+                  // App version
+                  Center(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 16.0),
+                      child: Text(
+                        'Version 1.0.0',
+                        style: GoogleFonts.merriweather(
+                          fontSize: 14,
+                          color: Colors.black38,
+                        ),
+                      ),
                     ),
                   ),
                 ],
               ),
-            ),
-            
-            const SizedBox(height: 48),
-            
-            // Options list
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: Column(
-                children: [
-                  _buildProfileOption(
-                    context, 
-                    'Edit Profile', 
-                    Icons.edit_outlined,
-                    onTap: () {
-                      // Handle edit profile
-                    },
-                  ),
-                  const SizedBox(height: 16),
-                  _buildProfileOption(
-                    context, 
-                    'Notifications', 
-                    Icons.notifications_outlined,
-                    onTap: () {
-                      // Handle notifications
-                    },
-                  ),
-                  const SizedBox(height: 16),
-                  _buildProfileOption(
-                    context, 
-                    'Privacy Policy', 
-                    Icons.privacy_tip_outlined,
-                    onTap: () {
-                      // Handle privacy policy
-                    },
-                  ),
-                  const SizedBox(height: 16),
-                  _buildProfileOption(
-                    context, 
-                    'Terms of Service', 
-                    Icons.description_outlined,
-                    onTap: () {
-                      // Handle terms of service
-                    },
-                  ),
-                ],
-              ),
-            ),
-            
-            const Spacer(),
-            
-            // Sign out button
-            Center(
-              child: GestureDetector(
-                onTap: () {
-                  // Handle sign out
-                  Navigator.of(context).pushAndRemoveUntil(
-                    MaterialPageRoute(builder: (context) => const SignInScreen()),
-                    (route) => false,
-                  );
-                },
-                child: Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: Colors.black,
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  width: double.infinity,
-                  child: Center(
-                    child: Text(
-                      'Sign Out',
-                      style: GoogleFonts.merriweather(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            
-            // App version
-            Center(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 16.0),
-                child: Text(
-                  'Version 1.0.0',
-                  style: GoogleFonts.merriweather(
-                    fontSize: 14,
-                    color: Colors.black38,
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }

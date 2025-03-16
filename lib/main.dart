@@ -1,16 +1,24 @@
 import 'package:affirmation/screens/profile_screen.dart';
+import 'package:firebase_core/firebase_core.dart'; // Import Firebase Core
+import 'package:affirmation/firebase_options.dart'; // Import Firebase options
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'screens/home_screen.dart';
 import 'screens/favorites_screen.dart';
 import 'screens/settings_screen.dart';
-import 'screens/splash_screen.dart'; // Import the new SplashScreen
+import 'screens/splash_screen.dart';
 import 'services/affirmation_service.dart';
 import 'services/notification_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
+  // Initialize Firebase
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+  
   await AffirmationService.initialize();
   await NotificationService.initialize();
 
@@ -37,7 +45,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'BeYou - Affirmations',
+      title: 'BeYou - Positive Vibes',
       theme: ThemeData(
         primarySwatch: Colors.blue,
         scaffoldBackgroundColor: const Color(0xFFD5EAE4),
@@ -55,12 +63,12 @@ class MyApp extends StatelessWidget {
           ),
         ),
       ),
-      home: const SplashScreen(), // Use SplashScreen as inirtial screen
+      home: const SplashScreen(),
       routes: {
         '/home': (context) => const HomeScreen(),
         '/favorites': (context) => const FavoritesScreen(),
         '/settings': (context) => const SettingsScreen(),
-        '/profile': (context) => const ProfileScreen(), // Add this line
+        '/profile': (context) => const ProfileScreen(),
       },
     );
   }

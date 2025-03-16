@@ -48,6 +48,10 @@ dependencies:
   feather_icons: ^1.2.0
   screenshot: ^3.0.0
   firebase_core: ^3.12.1
+  firebase_auth: ^5.5.1
+  google_sign_in: ^6.2.2
+  cached_network_image: ^3.3.1
+  rename_app: ^1.6.2
 
 dev_dependencies:
   flutter_test:
