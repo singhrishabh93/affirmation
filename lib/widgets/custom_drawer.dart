@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class CustomDrawer extends StatelessWidget {
   const CustomDrawer({Key? key}) : super(key: key);
@@ -19,9 +20,9 @@ class CustomDrawer extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  const Text(
+                   Text(
                     'You',
-                    style: TextStyle(
+                    style: GoogleFonts.merriweather(
                       color: Colors.black87,
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
@@ -30,7 +31,7 @@ class CustomDrawer extends StatelessWidget {
                   const SizedBox(height: 8),
                   Text(
                     'Daily affirmations for a positive mindset',
-                    style: TextStyle(
+                    style: GoogleFonts.merriweather(
                       color: Colors.black87.withOpacity(0.7),
                       fontSize: 14,
                     ),

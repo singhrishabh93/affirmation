@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'screens/home_screen.dart';
 import 'screens/favorites_screen.dart';
 import 'screens/settings_screen.dart';
@@ -38,15 +39,14 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
         scaffoldBackgroundColor: const Color(0xFFD5EAE4),
-        fontFamily: 'Georgia',
-        textTheme: const TextTheme(
-          displayLarge: TextStyle(
+        textTheme: TextTheme(
+          displayLarge: GoogleFonts.merriweather(
             fontSize: 28,
             fontWeight: FontWeight.bold,
             color: Colors.black87,
             height: 1.4,
           ),
-          bodyLarge: TextStyle(
+          bodyLarge: GoogleFonts.merriweather(
             fontSize: 18,
             fontWeight: FontWeight.w500,
             color: Colors.black87,

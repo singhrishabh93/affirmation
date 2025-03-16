@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:share_plus/share_plus.dart';
 import '../models/affirmation.dart';
 
@@ -44,7 +45,7 @@ class AffirmationCard extends StatelessWidget {
                 ),
                 child: Text(
                   affirmation.category!,
-                  style: const TextStyle(
+                  style: GoogleFonts.merriweather(
                     fontSize: 12,
                     fontWeight: FontWeight.w500,
                   ),
@@ -52,7 +53,7 @@ class AffirmationCard extends StatelessWidget {
               ),
             Text(
               affirmation.text,
-              style: const TextStyle(
+              style: GoogleFonts.merriweather(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
                 height: 1.4,

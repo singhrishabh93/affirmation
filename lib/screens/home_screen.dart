@@ -1,5 +1,8 @@
+import 'package:affirmation/constants/app_colors.dart'; // Import the colors file
 import 'package:affirmation/widgets/category_bottom_sheet.dart';
+import 'package:feather_icons/feather_icons.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:share_plus/share_plus.dart';
 import 'dart:math';
 import 'dart:collection';
@@ -36,15 +39,8 @@ class _HomeScreenState extends State<HomeScreen> {
   // For heart animation
   bool _isShowingHeartAnimation = false;
 
-  // Background colors
-  final List<Color> backgroundColors = [
-    const Color(0xFFD5EAE4), // teal
-    const Color(0xFFE8D5EA), // lavender
-    const Color(0xFFEAE4D5), // cream
-    const Color(0xFFD5E6EA), // light blue
-    const Color(0xFFE0D5EA), // purple
-    const Color(0xFFEAD5D5), // light pink
-  ];
+  // Use colors from the app_colors.dart file
+  List<Color> get backgroundColors => AppColors.affirmationBackgrounds;
 
   late Color currentColor;
   late Color nextColor;
@@ -81,6 +77,25 @@ class _HomeScreenState extends State<HomeScreen> {
         backgroundColors.length > 2);
 
     previousColor = newColor;
+  }
+
+  // Get the appropriate text style for the current background
+  TextStyle getAffirmationTextStyle(Color backgroundColor) {
+    return GoogleFonts.merriweather(
+      fontSize: 28,
+      fontWeight: FontWeight.bold,
+      color: AppColors.getTextColorForBackground(backgroundColor),
+      height: 1.4,
+    );
+  }
+
+  // Get text style for secondary text elements
+  TextStyle getSecondaryTextStyle(Color backgroundColor) {
+    return GoogleFonts.merriweather(
+      fontSize: 18,
+      fontWeight: FontWeight.w500,
+      color: AppColors.getTextColorForBackground(backgroundColor),
+    );
   }
 
   Future<void> _loadAffirmations() async {
@@ -297,14 +312,13 @@ class _HomeScreenState extends State<HomeScreen> {
                                         horizontal: 40.0),
                                     child: Text(
                                       nextAffirmation!.text,
-                                      style:
-                                          Theme.of(context).textTheme.displayLarge,
+                                      style: getAffirmationTextStyle(nextColor),
                                       textAlign: TextAlign.center,
                                     ),
                                   ),
                                 ),
                               ),
-                              _buildBottomBar(nextAffirmation!),
+                              _buildBottomBar(nextAffirmation!, nextColor),
                             ],
                           ),
                         ),
@@ -330,14 +344,13 @@ class _HomeScreenState extends State<HomeScreen> {
                                         horizontal: 40.0),
                                     child: Text(
                                       previousAffirmation!.text,
-                                      style:
-                                          Theme.of(context).textTheme.displayLarge,
+                                      style: getAffirmationTextStyle(previousColor),
                                       textAlign: TextAlign.center,
                                     ),
                                   ),
                                 ),
                               ),
-                              _buildBottomBar(previousAffirmation!),
+                              _buildBottomBar(previousAffirmation!, previousColor),
                             ],
                           ),
                         ),
@@ -416,14 +429,13 @@ class _HomeScreenState extends State<HomeScreen> {
                                         horizontal: 40.0),
                                     child: Text(
                                       currentAffirmation.text,
-                                      style:
-                                          Theme.of(context).textTheme.displayLarge,
+                                      style: getAffirmationTextStyle(currentColor),
                                       textAlign: TextAlign.center,
                                     ),
                                   ),
                                 ),
                               ),
-                              _buildBottomBar(currentAffirmation),
+                              _buildBottomBar(currentAffirmation, currentColor),
                             ],
                           ),
                         ),
@@ -474,6 +486,8 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildEmptyState() {
+    final textColor = AppColors.getTextColorForBackground(currentColor);
+    
     return Container(
       color: currentColor,
       child: Stack(
@@ -489,15 +503,19 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(
+                        Icon(
                           Icons.format_quote,
                           size: 80,
-                          color: Colors.black38,
+                          color: textColor.withOpacity(0.5),
                         ),
                         const SizedBox(height: 24),
                         Text(
                           "No affirmations yet",
-                          style: Theme.of(context).textTheme.displayLarge,
+                          style: GoogleFonts.merriweather(
+                            fontSize: 28,
+                            fontWeight: FontWeight.bold,
+                            color: textColor,
+                          ),
                           textAlign: TextAlign.center,
                         ),
                         const SizedBox(height: 16),
@@ -505,7 +523,10 @@ class _HomeScreenState extends State<HomeScreen> {
                           currentCategory == "Favorites"
                               ? "Double-tap on an affirmation to favorite it"
                               : "Try selecting a different category",
-                          style: Theme.of(context).textTheme.bodyLarge,
+                          style: GoogleFonts.merriweather(
+                            fontSize: 18,
+                            color: textColor,
+                          ),
                           textAlign: TextAlign.center,
                         ),
                         const SizedBox(height: 40),
@@ -521,8 +542,8 @@ class _HomeScreenState extends State<HomeScreen> {
                             }
                           },
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.black,
-                            foregroundColor: Colors.white,
+                            backgroundColor: textColor,
+                            foregroundColor: currentColor,
                             padding: const EdgeInsets.symmetric(
                               horizontal: 32,
                               vertical: 16,
@@ -533,9 +554,10 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                           child: Text(
                             currentCategory != null ? "View All Affirmations" : "Open Categories",
-                            style: const TextStyle(
+                            style: GoogleFonts.merriweather(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
+                              color: currentColor,
                             ),
                           ),
                         ),
@@ -564,28 +586,33 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildAppBar() {
     return Padding(
-      padding: const EdgeInsets.only(top: 8.0),
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
       child: Row(
         children: [
-          IconButton(
-            icon: const Icon(Icons.menu),
-            color: Colors.black87,
-            onPressed: () {
-              _scaffoldKey.currentState?.openDrawer();
-            },
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              shape: BoxShape.circle,
+            ),
+            child: IconButton(
+              icon: const Icon(FeatherIcons.alignCenter),
+              color: Colors.black87,
+              onPressed: _showCategoriesBottomSheet,
+            ),
           ),
           const Spacer(),
-          IconButton(
-            icon: const Icon(Icons.category_outlined),
-            color: Colors.black87,
-            onPressed: _showCategoriesBottomSheet,
-          ),
-          IconButton(
-            icon: const Icon(Icons.card_giftcard),
-            color: Colors.black87,
-            onPressed: () {
-              // Premium features or store
-            },
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              shape: BoxShape.circle,
+            ),
+            child: IconButton(
+              icon: const Icon(FeatherIcons.user),
+              color: Colors.black87,
+              onPressed: () {
+                // Premium features or store
+              },
+            ),
           ),
         ],
       ),
@@ -683,7 +710,9 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  Widget _buildBottomBar(Affirmation affirmation) {
+  Widget _buildBottomBar(Affirmation affirmation, Color backgroundColor) {
+    final textColor = AppColors.getTextColorForBackground(backgroundColor);
+    
     return Column(
       children: [
         Padding(
@@ -702,11 +731,14 @@ class _HomeScreenState extends State<HomeScreen> {
                   onTap: _shareAffirmation,
                   child: Row(
                     children: [
-                      const Icon(Icons.ios_share, color: Colors.black87),
+                      const Icon(FeatherIcons.share, color: Colors.black87),
                       const SizedBox(width: 10),
                       Text(
                         "Share",
-                        style: Theme.of(context).textTheme.bodyLarge,
+                        style: GoogleFonts.merriweather(
+                          color: Colors.black87,
+                          fontSize: 18,
+                        ),
                       ),
                     ],
                   ),
@@ -715,7 +747,7 @@ class _HomeScreenState extends State<HomeScreen> {
               const SizedBox(width: 20),
               Container(
                 padding: const EdgeInsets.all(12),
-                decoration: const BoxDecoration(
+                decoration: BoxDecoration(
                   color: Colors.white,
                   shape: BoxShape.circle,
                 ),

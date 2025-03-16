@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../models/affirmation.dart';
 import '../services/affirmation_service.dart';
 import '../widgets/affirmation_card.dart';
@@ -46,7 +47,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Your Favorites'),
+        title: Text('Your Favorites', style: GoogleFonts.merriweather(),),
         backgroundColor: Colors.transparent,
         foregroundColor: Colors.black87,
         elevation: 0,
@@ -66,13 +67,16 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                       const SizedBox(height: 16),
                       Text(
                         'No favorites yet',
-                        style: Theme.of(context).textTheme.headlineSmall,
+                        style: GoogleFonts.merriweather(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                       const SizedBox(height: 8),
-                      const Text(
+                      Text(
                         'Tap the heart icon to add affirmations to your favorites',
                         textAlign: TextAlign.center,
-                        style: TextStyle(color: Colors.black54),
+                        style: GoogleFonts.merriweather(color: Colors.black54),
                       ),
                     ],
                   ),

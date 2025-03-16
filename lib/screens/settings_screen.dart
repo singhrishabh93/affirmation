@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../services/notification_service.dart';
 import '../models/notification_settings.dart';
 
@@ -74,11 +75,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ),
       body: ListView(
         children: [
-          const Padding(
+          Padding(
             padding: EdgeInsets.all(16.0),
             child: Text(
               'Notifications',
-              style: TextStyle(
+              style: GoogleFonts.merriweather(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
               ),
@@ -126,11 +127,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
             ),
           const Divider(),
-          const Padding(
+          Padding(
             padding: EdgeInsets.all(16.0),
             child: Text(
               'Appearance',
-              style: TextStyle(
+              style: GoogleFonts.merriweather(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
               ),
@@ -148,11 +149,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
             },
           ),
           const Divider(),
-          const Padding(
+          Padding(
             padding: EdgeInsets.all(16.0),
             child: Text(
               'About',
-              style: TextStyle(
+              style: GoogleFonts.merriweather(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
               ),

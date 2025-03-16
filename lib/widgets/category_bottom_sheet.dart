@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class CategoryBottomSheet extends StatelessWidget {
   final Function(String)? onCategorySelected;
@@ -24,23 +25,23 @@ class CategoryBottomSheet extends StatelessWidget {
               padding: const EdgeInsets.all(16.0),
               child: InkWell(
                 onTap: () => Navigator.pop(context),
-                child: const Text(
+                child: Text(
                   'Close',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w500,
+                  style: GoogleFonts.merriweather(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
                   ),
                 ),
               ),
             ),
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
               child: Text(
                 'Categories',
-                style: TextStyle(
-                  fontSize: 32,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: GoogleFonts.merriweather(
+                              fontSize: 32,
+                              fontWeight: FontWeight.bold,
+                  ),
               ),
             ),
             const SizedBox(height: 12),
@@ -131,7 +132,7 @@ class CategoryBottomSheet extends StatelessWidget {
             const SizedBox(width: 16),
             Text(
               title,
-              style: TextStyle(
+              style: GoogleFonts.merriweather(
                 fontSize: 20,
                 fontWeight: FontWeight.w500,
                 color: isSelected ? Colors.white : Colors.black,
