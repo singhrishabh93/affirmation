@@ -7,12 +7,17 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:892960822118:android:c7a35cbe75d70ed73d2ea7",
+        "mobilesdk_app_id": "1:892960822118:android:30179cdeeea9d6d23d2ea7",
         "android_client_info": {
-          "package_name": "com.example.affirmation"
+          "package_name": "com.beyou.affirmation"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "892960822118-jql565epo93n1gt760mbjrfh2psussmi.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyDBFx9HjVMRYZfEdkLd655G4cZRb_b9nI4"
@@ -20,7 +25,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "892960822118-jql565epo93n1gt760mbjrfh2psussmi.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }

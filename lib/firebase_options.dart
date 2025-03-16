@@ -54,7 +54,7 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyDBFx9HjVMRYZfEdkLd655G4cZRb_b9nI4',
-    appId: '1:892960822118:android:c7a35cbe75d70ed73d2ea7',
+    appId: '1:892960822118:android:30179cdeeea9d6d23d2ea7',
     messagingSenderId: '892960822118',
     projectId: 'affirmation-app-918d6',
     storageBucket: 'affirmation-app-918d6.firebasestorage.app',

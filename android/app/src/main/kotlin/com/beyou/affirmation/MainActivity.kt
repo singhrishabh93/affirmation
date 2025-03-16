@@ -1,4 +1,4 @@
-package com.example.affirmation
+package com.beyou.affirmation
 
 import io.flutter.embedding.android.FlutterActivity
 
