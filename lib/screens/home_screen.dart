@@ -562,28 +562,28 @@ class _HomeScreenState extends State<HomeScreen> {
                           size: 80,
                           color: textColor.withOpacity(0.5),
                         ),
-                        const SizedBox(height: 24),
+                        const SizedBox(height: 16),
                         Text(
                           "No affirmations yet",
                           style: GoogleFonts.merriweather(
-                            fontSize: 28,
+                            fontSize: 20,
                             fontWeight: FontWeight.bold,
                             color: textColor,
                           ),
                           textAlign: TextAlign.center,
                         ),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 12),
                         Text(
                           currentCategory == "Favorites"
                               ? "Double-tap on an affirmation to favorite it"
                               : "Try selecting a different category",
                           style: GoogleFonts.merriweather(
-                            fontSize: 18,
+                            fontSize: 14,
                             color: textColor,
                           ),
                           textAlign: TextAlign.center,
                         ),
-                        const SizedBox(height: 40),
+                        const SizedBox(height: 25),
                         ElevatedButton(
                           onPressed: () {
                             if (currentCategory != null) {
@@ -599,8 +599,8 @@ class _HomeScreenState extends State<HomeScreen> {
                             backgroundColor: textColor,
                             foregroundColor: currentColor,
                             padding: const EdgeInsets.symmetric(
-                              horizontal: 32,
-                              vertical: 16,
+                              horizontal: 26,
+                              vertical: 12,
                             ),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(30),
@@ -608,7 +608,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                           child: Text(
                             currentCategory != null
-                                ? "View All Affirmations"
+                                ? "Open Categories"
                                 : "Open Categories",
                             style: GoogleFonts.merriweather(
                               fontSize: 16,
