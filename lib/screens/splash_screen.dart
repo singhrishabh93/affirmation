@@ -1,6 +1,6 @@
+import 'package:affirmation/screens/Auth/signIn_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'home_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({Key? key}) : super(key: key);
@@ -12,7 +12,6 @@ class SplashScreen extends StatefulWidget {
 class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _animation;
-  bool _showHomeScreen = false;
 
   @override
   void initState() {
@@ -42,7 +41,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
       if (status == AnimationStatus.completed) {
         Navigator.of(context).pushReplacement(
           PageRouteBuilder(
-            pageBuilder: (_, __, ___) => const HomeScreen(),
+            pageBuilder: (_, __, ___) => const SignInScreen(), // Navigate to SignInScreen instead
             transitionDuration: Duration.zero,
           ),
         );
