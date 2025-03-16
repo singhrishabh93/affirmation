@@ -1,3 +1,4 @@
+import 'package:affirmation/widgets/category_bottom_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart';
 import 'dart:math';
@@ -19,6 +20,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Affirmation? previousAffirmation;
   bool isLoading = true;
   List<Affirmation> affirmations = [];
+  String? currentCategory;
 
   // History stack to track visited affirmations
   final Queue<Affirmation> _history = Queue<Affirmation>();
@@ -466,6 +468,11 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           const Spacer(),
           IconButton(
+            icon: const Icon(Icons.category_outlined),
+            color: Colors.black87,
+            onPressed: _showCategoriesBottomSheet,
+          ),
+          IconButton(
             icon: const Icon(Icons.card_giftcard),
             color: Colors.black87,
             onPressed: () {
@@ -475,6 +482,93 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
     );
+  }
+
+  void _showCategoriesBottomSheet() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      isDismissible: true,
+      builder: (context) => CategoryBottomSheet(
+        currentCategory: currentCategory,
+        onCategorySelected: (category) {
+          setState(() {
+            currentCategory = category;
+          });
+          _loadAffirmationsByCategory(category);
+        },
+      ),
+    );
+  }
+
+  Future<void> _loadAffirmationsByCategory(String category) async {
+    setState(() {
+      isLoading = true;
+    });
+
+    // Get all affirmations
+    final allAffirmations = await AffirmationService.getAffirmations();
+
+    List<Affirmation> filteredAffirmations = [];
+
+    // Filter based on category
+    if (category == "Favorites") {
+      filteredAffirmations =
+          allAffirmations.where((a) => a.isFavorite).toList();
+    } else if (category == "Confidence") {
+      filteredAffirmations = allAffirmations
+          .where((a) => a.category?.toLowerCase() == "confidence")
+          .toList();
+    } else if (category == "General") {
+      filteredAffirmations = allAffirmations
+          .where((a) =>
+              a.category == null ||
+              a.category!.isEmpty ||
+              a.category!.toLowerCase() == "general")
+          .toList();
+    } else if (category == "Abundance") {
+      filteredAffirmations = allAffirmations
+          .where((a) => a.category?.toLowerCase() == "abundance")
+          .toList();
+    } else if (category == "Love") {
+      filteredAffirmations = allAffirmations
+          .where((a) => a.category?.toLowerCase() == "love")
+          .toList();
+    } else if (category == "Success") {
+      filteredAffirmations = allAffirmations
+          .where((a) => a.category?.toLowerCase() == "success")
+          .toList();
+    } else if (category == "Gratitude") {
+      filteredAffirmations = allAffirmations
+          .where((a) => a.category?.toLowerCase() == "gratitude")
+          .toList();
+    }
+
+    // If no matching affirmations, use all
+    if (filteredAffirmations.isEmpty) {
+      filteredAffirmations = allAffirmations;
+    }
+
+    if (filteredAffirmations.isNotEmpty) {
+      // Select a random affirmation from the filtered list
+      final randomIndex = Random().nextInt(filteredAffirmations.length);
+      currentAffirmation = filteredAffirmations[randomIndex];
+
+      // Clear history and add current
+      _history.clear();
+      _history.addLast(currentAffirmation);
+
+      // Clear forward history
+      _forward.clear();
+    }
+
+    // Prepare next and previous affirmations
+    _prepareNextAffirmation();
+    _preparePreviousAffirmation();
+
+    setState(() {
+      isLoading = false;
+    });
   }
 
   Widget _buildBottomBar(Affirmation affirmation) {
