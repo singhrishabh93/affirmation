@@ -12,7 +12,7 @@
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
         android:text="BeYou"
-        android:textColor="#FFFFFF"
+        android:textColor="#000000"
         android:textSize="18sp"
         android:textStyle="bold" />
 
@@ -23,7 +23,7 @@
         android:layout_below="@id/widget_title"
         android:layout_marginTop="8dp"
         android:text="Be your best self today!"
-        android:textColor="#FFFFFF"
+        android:textColor="#000000"
         android:textSize="16sp" />
 
 </RelativeLayout>
