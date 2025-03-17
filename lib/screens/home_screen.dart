@@ -535,6 +535,26 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                       ),
                     ),
+
+                    // Fixed justify icon at bottom left that doesn't move with swipe
+                    Positioned(
+                      bottom: 60,
+                      left: 20,
+                      child: Container(
+                        padding: EdgeInsets.all(4),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                        ),
+                        child: IconButton(
+                          icon: const Icon(FeatherIcons.alignCenter),
+                          color: Colors.black87,
+                          onPressed: () {
+                            _showCategoriesBottomSheet();
+                          },
+                        ),
+                      ),
+                    ),
                   ],
                 ),
     );
@@ -639,17 +659,17 @@ class _HomeScreenState extends State<HomeScreen> {
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
       child: Row(
         children: [
-          Container(
-            decoration: BoxDecoration(
-              color: Colors.white,
-              shape: BoxShape.circle,
-            ),
-            child: IconButton(
-              icon: const Icon(FeatherIcons.alignCenter),
-              color: Colors.black87,
-              onPressed: _showCategoriesBottomSheet,
-            ),
-          ),
+          // Container(
+          //   decoration: BoxDecoration(
+          //     color: Colors.white,
+          //     shape: BoxShape.circle,
+          //   ),
+          //   child: IconButton(
+          //     icon: const Icon(FeatherIcons.alignCenter),
+          //     color: Colors.black87,
+          //     onPressed: _showCategoriesBottomSheet,
+          //   ),
+          // ),
           const Spacer(),
           Container(
             decoration: BoxDecoration(
@@ -772,53 +792,63 @@ class _HomeScreenState extends State<HomeScreen> {
     return Column(
       children: [
         Padding(
-          padding: const EdgeInsets.only(bottom: 60.0),
+          padding: const EdgeInsets.only(bottom: 60.0, left: 20.0, right: 20.0),
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(30),
-                ),
-                child: InkWell(
-                  onTap: _shareAffirmation,
-                  child: Row(
-                    children: [
-                      const Icon(FeatherIcons.share, color: Colors.black87),
-                      const SizedBox(width: 10),
-                      Text(
-                        "Share",
-                        style: GoogleFonts.merriweather(
-                          color: Colors.black87,
-                          fontSize: 18,
-                        ),
+              // Left side empty - justify button will be added as a fixed overlay
+              const SizedBox(width: 40),
+
+              // Right side - Share and favorite
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 24, vertical: 12),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                    child: InkWell(
+                      onTap: _shareAffirmation,
+                      child: Row(
+                        children: [
+                          const Icon(FeatherIcons.share, color: Colors.black87),
+                          const SizedBox(width: 10),
+                          Text(
+                            "Share",
+                            style: GoogleFonts.merriweather(
+                              color: Colors.black87,
+                              fontSize: 18,
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
+                    ),
                   ),
-                ),
-              ),
-              const SizedBox(width: 20),
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  shape: BoxShape.circle,
-                ),
-                child: InkWell(
-                  onTap: affirmation.id == currentAffirmation.id
-                      ? _toggleFavorite
-                      : null,
-                  child: Icon(
-                    affirmation.isFavorite
-                        ? Icons.favorite
-                        : Icons.favorite_border,
-                    color: affirmation.isFavorite ? Colors.red : Colors.black87,
-                    size: 28,
+                  const SizedBox(width: 20),
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      shape: BoxShape.circle,
+                    ),
+                    child: InkWell(
+                      onTap: affirmation.id == currentAffirmation.id
+                          ? _toggleFavorite
+                          : null,
+                      child: Icon(
+                        affirmation.isFavorite
+                            ? Icons.favorite
+                            : Icons.favorite_border,
+                        color: affirmation.isFavorite
+                            ? Colors.red
+                            : Colors.black87,
+                        size: 28,
+                      ),
+                    ),
                   ),
-                ),
+                ],
               ),
             ],
           ),
