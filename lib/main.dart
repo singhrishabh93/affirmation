@@ -4,12 +4,24 @@ import 'package:affirmation/firebase_options.dart'; // Import Firebase options
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:home_widget/home_widget.dart'; // Add this import
 import 'screens/home_screen.dart';
 import 'screens/favorites_screen.dart';
 import 'screens/settings_screen.dart';
 import 'screens/splash_screen.dart';
 import 'services/affirmation_service.dart';
 import 'services/notification_service.dart';
+import 'services/home_widget_manager.dart'; // Add this import
+
+// Add this callback function outside of any class
+@pragma("vm:entry-point")
+void backgroundCallback(Uri? data) async {
+  if (data?.host == 'titleclicked') {
+    // Handle the interaction
+    await HomeWidget.setAppGroupId('com.beyou.affirmation');
+    await interactivityCallback(data);
+  }
+}
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -21,6 +33,11 @@ void main() async {
   
   await AffirmationService.initialize();
   await NotificationService.initialize();
+  
+  // Initialize HomeWidget
+  await HomeWidget.setAppGroupId('com.beyou.affirmation');
+  HomeWidget.registerBackgroundCallback(backgroundCallback);
+  await HomeWidgetManager.initialize(); // Add widget initialization
 
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(

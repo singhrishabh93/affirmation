@@ -1,5 +1,9 @@
+import 'dart:io';
+
+import 'package:affirmation/services/home_widget_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:home_widget/home_widget.dart';
 import '../services/notification_service.dart';
 import '../models/notification_settings.dart';
 
@@ -24,13 +28,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Future<void> _loadSettings() async {
     final settings = await NotificationService.getSettings();
-    
+
     setState(() {
       notificationsEnabled = settings.enabled;
       notificationTime = settings.time;
       notificationFrequency = settings.frequency;
     });
-    
+
     // Load theme settings here
   }
 
@@ -40,9 +44,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
       time: notificationTime,
       frequency: notificationFrequency,
     );
-    
+
     await NotificationService.saveSettings(settings);
-    
+
     if (notificationsEnabled) {
       await NotificationService.scheduleNotifications();
     } else {
@@ -55,7 +59,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       context: context,
       initialTime: notificationTime,
     );
-    
+
     if (picked != null && picked != notificationTime) {
       setState(() {
         notificationTime = picked;
@@ -87,7 +91,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           SwitchListTile(
             title: const Text('Daily Affirmations'),
-            subtitle: const Text('Receive notifications with daily affirmations'),
+            subtitle:
+                const Text('Receive notifications with daily affirmations'),
             value: notificationsEnabled,
             onChanged: (value) {
               setState(() {
@@ -177,6 +182,42 @@ class _SettingsScreenState extends State<SettingsScreen> {
               // Open terms of service
             },
           ),
+          const Divider(),
+          Padding(
+            padding: EdgeInsets.all(16.0),
+            child: Text(
+              'Home Widget',
+              style: GoogleFonts.merriweather(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+          ListTile(
+            title: const Text('Update Widget'),
+            subtitle: const Text(
+                'Update your home screen widget with a new affirmation'),
+            trailing: const Icon(Icons.refresh),
+            onTap: () async {
+              await HomeWidgetManager.updateWidget();
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                    content: Text('Widget updated with a new affirmation')),
+              );
+            },
+          ),
+          if (Platform.isAndroid)
+            ListTile(
+              title: const Text('Add Widget to Home Screen'),
+              subtitle: const Text('Add the BeYou widget to your home screen'),
+              trailing: const Icon(Icons.add_to_home_screen),
+              onTap: () async {
+                await HomeWidget.requestPinWidget(
+                  qualifiedAndroidName:
+                      'com.beyou.affirmation.AffirmationWidgetProvider',
+                );
+              },
+            ),
         ],
       ),
     );

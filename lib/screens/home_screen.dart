@@ -8,6 +8,7 @@ import 'package:feather_icons/feather_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:home_widget/home_widget.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'dart:math';
@@ -64,6 +65,31 @@ class _HomeScreenState extends State<HomeScreen> {
     currentColor = backgroundColors[0];
     _pickNextColor();
     _pickPreviousColor();
+    
+    // Listen for widget launches
+    HomeWidget.widgetClicked.listen(_launchedFromWidget);
+  }
+  
+  void _launchedFromWidget(Uri? uri) {
+    if (uri != null) {
+      // Handle widget launch here if needed
+      print('App launched from widget with URI: $uri');
+    }
+  }
+
+  Future<void> _updateHomeScreenWidget(Affirmation affirmation) async {
+    try {
+      // Save data to widget storage
+      await HomeWidget.saveWidgetData('title', 'BeYou');
+      await HomeWidget.saveWidgetData('message', affirmation.text);
+      
+      // Update Android widget
+      await HomeWidget.updateWidget(
+        qualifiedAndroidName: 'com.beyou.affirmation.AffirmationWidgetProvider',
+      );
+    } catch (e) {
+      print('Error updating widget: $e');
+    }
   }
 
   void _pickNextColor() {
