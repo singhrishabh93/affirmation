@@ -16,6 +16,7 @@ import 'dart:collection';
 import '../models/affirmation.dart';
 import '../services/affirmation_service.dart';
 import '../widgets/custom_drawer.dart';
+import '../services/music_service.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -25,6 +26,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  final MusicService _musicService = MusicService();
   final GlobalKey _screenshotKey = GlobalKey();
   late Affirmation currentAffirmation;
   Affirmation? nextAffirmation;
@@ -65,6 +67,8 @@ class _HomeScreenState extends State<HomeScreen> {
     currentColor = backgroundColors[0];
     _pickNextColor();
     _pickPreviousColor();
+
+    _musicService.initialize();
     
     // Listen for widget launches
     HomeWidget.widgetClicked.listen(_launchedFromWidget);
@@ -133,36 +137,38 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _loadAffirmations() async {
-    setState(() {
-      isLoading = true;
-    });
+  setState(() {
+    isLoading = true;
+  });
 
-    affirmations = await AffirmationService.getAffirmations();
-    filteredAffirmations =
-        affirmations; // Initialize filtered list with all affirmations
+  affirmations = await AffirmationService.getAffirmations();
+  filteredAffirmations = affirmations;
 
-    // Select initial affirmation
-    if (affirmations.isNotEmpty) {
-      final randomIndex = Random().nextInt(affirmations.length);
-      currentAffirmation = affirmations[randomIndex];
+  // Select initial affirmation
+  if (affirmations.isNotEmpty) {
+    final randomIndex = Random().nextInt(affirmations.length);
+    currentAffirmation = affirmations[randomIndex];
 
-      // Add to history
-      _history.addLast(currentAffirmation);
+    // Play default music
+    await _musicService.playMusicForCategory(currentAffirmation.category ?? 'General');
 
-      // Prepare next and previous affirmations
-      _prepareNextAffirmation();
-      _preparePreviousAffirmation();
+    // Add to history
+    _history.addLast(currentAffirmation);
 
-      hasMoreAffirmations = filteredAffirmations.length > 1;
-    } else {
-      // Handle case when there are no affirmations
-      hasMoreAffirmations = false;
-    }
+    // Prepare next and previous affirmations
+    _prepareNextAffirmation();
+    _preparePreviousAffirmation();
 
-    setState(() {
-      isLoading = false;
-    });
+    hasMoreAffirmations = filteredAffirmations.length > 1;
+  } else {
+    // Handle case when there are no affirmations
+    hasMoreAffirmations = false;
   }
+
+  setState(() {
+    isLoading = false;
+  });
+}
 
   void _prepareNextAffirmation() {
     // Get a different affirmation for next card
@@ -698,6 +704,21 @@ class _HomeScreenState extends State<HomeScreen> {
           // ),
           const Spacer(),
           Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            shape: BoxShape.circle,
+          ),
+          child: IconButton(
+            icon: Icon(_musicService.isMuted ? FeatherIcons.volumeX : FeatherIcons.volume2),
+            color: Colors.black87,
+            onPressed: () async {
+              await _musicService.toggleMute();
+              setState(() {}); // Update icon
+            },
+          ),
+        ),
+        const SizedBox(width: 12),
+          Container(
             decoration: BoxDecoration(
               color: Colors.white,
               shape: BoxShape.circle,
@@ -742,6 +763,8 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() {
       isLoading = true;
     });
+
+    await _musicService.playMusicForCategory(category ?? 'General');
 
     // Get all affirmations
     final allAffirmations = await AffirmationService.getAffirmations();
@@ -882,4 +905,10 @@ class _HomeScreenState extends State<HomeScreen> {
       ],
     );
   }
+
+  @override
+void dispose() {
+  _musicService.dispose();
+  super.dispose();
+}
 }
