@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:affirmation/screens/Auth/signIn_screen.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:lottie/lottie.dart';
 
 class ProfileScreen extends StatefulWidget {
   static const String routeName = '/profile';
@@ -54,7 +55,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       color: Colors.white,
       child: SafeArea(
         child: isLoading
-            ? const Center(child: CircularProgressIndicator())
+            ? Center(child: Lottie.asset('assets/loader.json', height: 50),)
             : Stack(
                 children: [
                   Column(
@@ -116,8 +117,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                       child: CachedNetworkImage(
                                         imageUrl: userData!['photoURL'],
                                         placeholder: (context, url) =>
-                                            const Center(
-                                          child: CircularProgressIndicator(),
+                                            Center(
+                                          child: Lottie.asset('assets/loader.json', height: 50),
                                         ),
                                         errorWidget: (context, url, error) =>
                                             const Icon(

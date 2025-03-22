@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:home_widget/home_widget.dart';
+import 'package:lottie/lottie.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'dart:math';
@@ -448,7 +449,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       key: _scaffoldKey,
       drawer: const CustomDrawer(),
       body: isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? Center(child: Lottie.asset('assets/loader.json', height: 50),)
           : filteredAffirmations.isEmpty
               ? _buildEmptyState()
               : Stack(

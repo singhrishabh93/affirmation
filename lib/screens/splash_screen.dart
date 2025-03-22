@@ -4,6 +4,7 @@ import 'package:affirmation/services/affirmation_service.dart';
 import 'package:affirmation/services/authentication_service.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lottie/lottie.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({Key? key}) : super(key: key);
@@ -121,7 +122,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                   ),
                   const SizedBox(height: 40),
                   if (_isLoading) ...[
-                    const CircularProgressIndicator(),
+                    Lottie.asset('assets/loader.json', height: 50),
                     const SizedBox(height: 20),
                     Text(
                       _loadingText,

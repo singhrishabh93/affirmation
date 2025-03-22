@@ -4,6 +4,7 @@ import 'package:affirmation/widgets/google_signin_button.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lottie/lottie.dart';
 
 class SignInScreen extends StatefulWidget {
   const SignInScreen({Key? key}) : super(key: key);
@@ -89,7 +90,7 @@ class _SignInScreenState extends State<SignInScreen> {
               
               // Google Sign-in Button
               _isLoading
-                  ? const CircularProgressIndicator()
+                  ? Lottie.asset('assets/loader.json', height: 50)
                   : GoogleSignInButton(
                       onPressed: _handleSignIn,
                     ),

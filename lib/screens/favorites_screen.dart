@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lottie/lottie.dart';
 import '../models/affirmation.dart';
 import '../services/affirmation_service.dart';
 import '../widgets/affirmation_card.dart';
@@ -53,7 +54,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
         elevation: 0,
       ),
       body: isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? Center(child: Lottie.asset('assets/loader.json', height: 50))
           : favorites.isEmpty
               ? Center(
                   child: Column(
