@@ -447,7 +447,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
     return Scaffold(
       key: _scaffoldKey,
-      drawer: const CustomDrawer(),
       body: isLoading
           ? Center(child: Lottie.asset('assets/loader.json', height: 50),)
           : filteredAffirmations.isEmpty

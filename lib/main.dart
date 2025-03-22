@@ -1,4 +1,5 @@
 import 'package:affirmation/screens/profile_screen.dart';
+import 'package:affirmation/services/fcm_service.dart';
 import 'package:firebase_core/firebase_core.dart'; // Import Firebase Core
 import 'package:affirmation/firebase_options.dart'; // Import Firebase options
 import 'package:flutter/material.dart';
@@ -30,6 +31,8 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+
+  await FCMService.initialize();
   
   await AffirmationService.initialize();
   await NotificationService.initialize();
