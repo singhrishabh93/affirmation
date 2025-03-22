@@ -25,7 +25,7 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   final MusicService _musicService = MusicService();
   final GlobalKey _screenshotKey = GlobalKey();
   late Affirmation currentAffirmation;
@@ -69,11 +69,11 @@ class _HomeScreenState extends State<HomeScreen> {
     _pickPreviousColor();
 
     _musicService.initialize();
-    
+
     // Listen for widget launches
     HomeWidget.widgetClicked.listen(_launchedFromWidget);
   }
-  
+
   void _launchedFromWidget(Uri? uri) {
     if (uri != null) {
       // Handle widget launch here if needed
@@ -86,7 +86,7 @@ class _HomeScreenState extends State<HomeScreen> {
       // Save data to widget storage
       await HomeWidget.saveWidgetData('title', 'BeYou');
       await HomeWidget.saveWidgetData('message', affirmation.text);
-      
+
       // Update Android widget
       await HomeWidget.updateWidget(
         qualifiedAndroidName: 'com.beyou.affirmation.AffirmationWidgetProvider',
@@ -137,38 +137,39 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _loadAffirmations() async {
-  setState(() {
-    isLoading = true;
-  });
+    setState(() {
+      isLoading = true;
+    });
 
-  affirmations = await AffirmationService.getAffirmations();
-  filteredAffirmations = affirmations;
+    affirmations = await AffirmationService.getAffirmations();
+    filteredAffirmations = affirmations;
 
-  // Select initial affirmation
-  if (affirmations.isNotEmpty) {
-    final randomIndex = Random().nextInt(affirmations.length);
-    currentAffirmation = affirmations[randomIndex];
+    // Select initial affirmation
+    if (affirmations.isNotEmpty) {
+      final randomIndex = Random().nextInt(affirmations.length);
+      currentAffirmation = affirmations[randomIndex];
 
-    // Play default music
-    await _musicService.playMusicForCategory(currentAffirmation.category ?? 'General');
+      // Play default music
+      await _musicService
+          .playMusicForCategory(currentAffirmation.category ?? 'General');
 
-    // Add to history
-    _history.addLast(currentAffirmation);
+      // Add to history
+      _history.addLast(currentAffirmation);
 
-    // Prepare next and previous affirmations
-    _prepareNextAffirmation();
-    _preparePreviousAffirmation();
+      // Prepare next and previous affirmations
+      _prepareNextAffirmation();
+      _preparePreviousAffirmation();
 
-    hasMoreAffirmations = filteredAffirmations.length > 1;
-  } else {
-    // Handle case when there are no affirmations
-    hasMoreAffirmations = false;
+      hasMoreAffirmations = filteredAffirmations.length > 1;
+    } else {
+      // Handle case when there are no affirmations
+      hasMoreAffirmations = false;
+    }
+
+    setState(() {
+      isLoading = false;
+    });
   }
-
-  setState(() {
-    isLoading = false;
-  });
-}
 
   void _prepareNextAffirmation() {
     // Get a different affirmation for next card
@@ -318,25 +319,113 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  void _animateToNext() {
+    final controller = AnimationController(
+      duration: const Duration(milliseconds: 200),
+      vsync: this,
+    );
+
+    Animation<double> animation = Tween<double>(
+      begin: dragDistance,
+      end: MediaQuery.of(context).size.height,
+    ).animate(CurvedAnimation(
+      parent: controller,
+      curve: Curves.easeOutQuint,
+    ));
+
+    animation.addListener(() {
+      setState(() {
+        dragDistance = animation.value;
+      });
+    });
+
+    animation.addStatusListener((status) {
+      if (status == AnimationStatus.completed) {
+        controller.dispose();
+        _goToNext();
+      }
+    });
+
+    controller.forward();
+  }
+
+  void _animateToPrevious() {
+    final controller = AnimationController(
+      duration: const Duration(milliseconds: 200),
+      vsync: this,
+    );
+
+    Animation<double> animation = Tween<double>(
+      begin: dragDistance,
+      end: MediaQuery.of(context).size.height,
+    ).animate(CurvedAnimation(
+      parent: controller,
+      curve: Curves.easeOutQuint,
+    ));
+
+    animation.addListener(() {
+      setState(() {
+        dragDistance = animation.value;
+      });
+    });
+
+    animation.addStatusListener((status) {
+      if (status == AnimationStatus.completed) {
+        controller.dispose();
+        _goToPrevious();
+      }
+    });
+
+    controller.forward();
+  }
+
+  void _animateBackToOriginal() {
+    final controller = AnimationController(
+      duration: const Duration(milliseconds: 300),
+      vsync: this,
+    );
+
+    Animation<double> animation = Tween<double>(
+      begin: dragDistance,
+      end: 0.0,
+    ).animate(CurvedAnimation(
+      parent: controller,
+      curve: Curves.elasticOut,
+    ));
+
+    animation.addListener(() {
+      setState(() {
+        dragDistance = animation.value;
+      });
+    });
+
+    animation.addStatusListener((status) {
+      if (status == AnimationStatus.completed) {
+        controller.dispose();
+        setState(() {
+          isDragging = false;
+        });
+      }
+    });
+
+    controller.forward();
+  }
+
   void _showHeartAnimation() {
-    // First make sure the animation is off to restart it
     setState(() {
       _isShowingHeartAnimation = false;
     });
 
-    // Toggle favorite if not already favorited
     if (!currentAffirmation.isFavorite) {
       _toggleFavorite();
     }
 
-    // Small delay to ensure animation restarts
     Future.delayed(const Duration(milliseconds: 10), () {
       if (mounted) {
         setState(() {
           _isShowingHeartAnimation = true;
         });
 
-        // Hide animation after delay
         Future.delayed(const Duration(milliseconds: 800), () {
           if (mounted) {
             setState(() {
@@ -449,41 +538,52 @@ class _HomeScreenState extends State<HomeScreen> {
                             // Dragging up (next) - only if there are more affirmations
                             setState(() {
                               isDraggingUp = true;
-                              dragDistance += -details.delta.dy;
+                              // Apply dampening factor as drag distance increases
+                              double dampening = 1.0 -
+                                  (dragDistance / (screenHeight * 0.8))
+                                      .clamp(0.0, 0.8);
+                              dragDistance += -details.delta.dy * dampening;
                             });
                           } else if (details.delta.dy > 0 &&
                               _history.length > 1) {
                             // Dragging down (previous)
                             setState(() {
                               isDraggingUp = false;
-                              dragDistance += details.delta.dy;
+                              // Apply dampening factor as drag distance increases
+                              double dampening = 1.0 -
+                                  (dragDistance / (screenHeight * 0.8))
+                                      .clamp(0.0, 0.8);
+                              dragDistance += details.delta.dy * dampening;
                             });
                           }
                         },
                         onVerticalDragEnd: (details) {
+                          // Calculate the velocity threshold based on screen height
+                          final velocityThreshold = screenHeight * 0.4;
+
                           if (isDraggingUp && hasMoreAffirmations) {
                             // Swiping up to next - only if there are more affirmations
                             if (dragDistance > dragThreshold ||
                                 (details.primaryVelocity != null &&
-                                    details.primaryVelocity! < -1500)) {
-                              _goToNext();
+                                    details.primaryVelocity! <
+                                        -velocityThreshold)) {
+                              // Spring-like animation to next card
+                              _animateToNext();
                             } else {
-                              setState(() {
-                                dragDistance = 0;
-                                isDragging = false;
-                              });
+                              // Spring-like animation back to original position
+                              _animateBackToOriginal();
                             }
-                          } else {
+                          } else if (!isDraggingUp && _history.length > 1) {
                             // Swiping down to previous
                             if (dragDistance > dragThreshold ||
                                 (details.primaryVelocity != null &&
-                                    details.primaryVelocity! > 1500)) {
-                              _goToPrevious();
+                                    details.primaryVelocity! >
+                                        velocityThreshold)) {
+                              // Spring-like animation to previous card
+                              _animateToPrevious();
                             } else {
-                              setState(() {
-                                dragDistance = 0;
-                                isDragging = false;
-                              });
+                              // Spring-like animation back to original position
+                              _animateBackToOriginal();
                             }
                           }
                         },
@@ -534,19 +634,19 @@ class _HomeScreenState extends State<HomeScreen> {
                       Positioned.fill(
                         child: Center(
                           child: TweenAnimationBuilder<double>(
-                            tween: Tween<double>(begin: 0.1, end: 1.0),
-                            duration: const Duration(milliseconds: 400),
+                            tween: Tween<double>(begin: 0.1, end: 1.5),
+                            duration: const Duration(milliseconds: 500),
                             curve: Curves.elasticOut,
                             builder: (context, value, child) {
                               return Transform.scale(
                                 scale: value,
                                 child: AnimatedOpacity(
                                   opacity: _isShowingHeartAnimation ? 1.0 : 0.0,
-                                  duration: const Duration(milliseconds: 300),
+                                  duration: const Duration(milliseconds: 900),
                                   child: const Icon(
                                     Icons.favorite,
                                     color: Colors.red,
-                                    size: 100,
+                                    size: 90,
                                   ),
                                 ),
                               );
@@ -704,20 +804,22 @@ class _HomeScreenState extends State<HomeScreen> {
           // ),
           const Spacer(),
           Container(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            shape: BoxShape.circle,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              shape: BoxShape.circle,
+            ),
+            child: IconButton(
+              icon: Icon(_musicService.isMuted
+                  ? FeatherIcons.volumeX
+                  : FeatherIcons.volume2),
+              color: Colors.black87,
+              onPressed: () async {
+                await _musicService.toggleMute();
+                setState(() {}); // Update icon
+              },
+            ),
           ),
-          child: IconButton(
-            icon: Icon(_musicService.isMuted ? FeatherIcons.volumeX : FeatherIcons.volume2),
-            color: Colors.black87,
-            onPressed: () async {
-              await _musicService.toggleMute();
-              setState(() {}); // Update icon
-            },
-          ),
-        ),
-        const SizedBox(width: 12),
+          const SizedBox(width: 12),
           Container(
             decoration: BoxDecoration(
               color: Colors.white,
@@ -907,8 +1009,8 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   @override
-void dispose() {
-  _musicService.dispose();
-  super.dispose();
-}
+  void dispose() {
+    _musicService.dispose();
+    super.dispose();
+  }
 }
