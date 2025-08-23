@@ -76,64 +76,62 @@ class NotificationService {
   }
   
   static Future<void> _scheduleDaily(int index) async {
-    // Calculate notification time based on index
-    final int hoursToAdd = index * (24 ~/ _settings.frequency);
-    final DateTime now = DateTime.now();
-    
-    DateTime scheduledDate = DateTime(
-      now.year,
-      now.month,
-      now.day,
-      _settings.time.hour,
-      _settings.time.minute,
-    );
-    
-    // Add hours if we have multiple notifications per day
-    scheduledDate = scheduledDate.add(Duration(hours: hoursToAdd));
-    
-    // If the time has already passed today, schedule for tomorrow
-    if (scheduledDate.isBefore(now)) {
-      scheduledDate = scheduledDate.add(const Duration(days: 1));
-    }
-    
-    // Get a random affirmation for the notification
-    final affirmation = await AffirmationService.getRandomAffirmation();
-    
-    final AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
-      'daily_affirmation',
-      'Daily Affirmations',
-      channelDescription: 'Daily positive affirmations to brighten your day',
-      importance: Importance.high,
-      priority: Priority.high,
-      showWhen: true,
-    );
-    
-    final DarwinNotificationDetails iOSDetails = DarwinNotificationDetails(
-      presentAlert: true,
-      presentBadge: true,
-      presentSound: true,
-    );
-    
-    final NotificationDetails notificationDetails = NotificationDetails(
-      android: androidDetails,
-      iOS: iOSDetails,
-    );
-    
-    await _notificationsPlugin.zonedSchedule(
-      index,  // Use index as ID to allow multiple notifications
-      'Your Daily Affirmation',
-      affirmation.text,
-      tz.TZDateTime.from(scheduledDate, tz.local),
-      notificationDetails,
-      // Replace deprecated androidAllowWhileIdle with the new property
-      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-      uiLocalNotificationDateInterpretation: 
-          UILocalNotificationDateInterpretation.absoluteTime,
-      matchDateTimeComponents: DateTimeComponents.time,
-      payload: affirmation.id,
-    );
+  // Calculate notification time based on index
+  final int hoursToAdd = index * (24 ~/ _settings.frequency);
+  final DateTime now = DateTime.now();
+
+  DateTime scheduledDate = DateTime(
+    now.year,
+    now.month,
+    now.day,
+    _settings.time.hour,
+    _settings.time.minute,
+  );
+
+  // Add hours if we have multiple notifications per day
+  scheduledDate = scheduledDate.add(Duration(hours: hoursToAdd));
+
+  // If the time has already passed today, schedule for tomorrow
+  if (scheduledDate.isBefore(now)) {
+    scheduledDate = scheduledDate.add(const Duration(days: 1));
   }
-  
+
+  // Get a random affirmation for the notification
+  final affirmation = await AffirmationService.getRandomAffirmation();
+
+  final AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
+    'daily_affirmation',
+    'Daily Affirmations',
+    channelDescription: 'Daily positive affirmations to brighten your day',
+    importance: Importance.high,
+    priority: Priority.high,
+    showWhen: true,
+  );
+
+  final DarwinNotificationDetails iOSDetails = DarwinNotificationDetails(
+    presentAlert: true,
+    presentBadge: true,
+    presentSound: true,
+  );
+
+  final NotificationDetails notificationDetails = NotificationDetails(
+    android: androidDetails,
+    iOS: iOSDetails,
+  );
+
+  // Schedule the notification
+  await _notificationsPlugin.zonedSchedule(
+    index, // ID
+    'Your Daily Affirmation',
+    affirmation.text,
+    tz.TZDateTime.from(scheduledDate, tz.local),
+    notificationDetails,
+    androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+    matchDateTimeComponents: DateTimeComponents.time, // optional
+    payload: affirmation.id,
+  );
+}
+
   static void _onNotificationTapped(NotificationResponse details) {
     // Handle notification tap
     // Navigate to the affirmation if needed
