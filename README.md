@@ -1,6 +1,8 @@
-# BeYou – Positive Vibes
+# 📚 BeYou – Positive Vibes
 
-[![Get it on Google Play](https://play.google.com/intl/en_us/badges/images/generic/en_badge_web_generic.png)](https://play.google.com/store/apps/details?id=com.beyou.affirmation)
+[<img src="https://play.google.com/intl/en_us/badges/images/generic/en_badge_web_generic.png" alt="Get it on Google Play" height="80">](https://play.google.com/store/apps/details?id=com.beyou.affirmation)
+
+---
 
 Are you ready to break free from negative thinking and embrace a mindset of growth and positivity? **BeYou** is your daily companion on the journey to self-empowerment, helping you cultivate confidence and a brighter outlook on life.
 
@@ -8,13 +10,14 @@ Access a thoughtfully curated collection of affirmations designed to uplift, ins
 
 ---
 
-## ✨ Key Features
-✅ **Hundreds of affirmations** to boost self-esteem and positivity  
-✅ **Daily reminders** to keep you focused and inspired  
-✅ **Widgets** for quick and easy access to affirmations anytime  
-✅ **Social sharing** to spread positivity with loved ones  
+## ✨ Features
 
-Start your journey toward a stronger, more confident you. With **BeYou**, each day is an opportunity to affirm your potential and embrace the power of positivity.  
+✅ Hundreds of affirmations to boost self-esteem and positivity  
+✅ Daily reminders to keep you focused and inspired  
+✅ Widgets for quick and easy access to affirmations anytime  
+✅ Social sharing to spread positivity with loved ones  
+
+Start your journey toward a stronger, more confident you. With **BeYou**, each day is an opportunity to affirm your potential and embrace the power of positivity.
 
 ---
 
@@ -30,25 +33,19 @@ Start your journey toward a stronger, more confident you. With **BeYou**, each d
 
 ---
 
-## 📥 Download Now
-
-👉 [**Get BeYou on Google Play**](https://play.google.com/store/apps/details?id=com.beyou.affirmation)
-
----
-
 ## 🚀 Getting Started
 
-This project is a starting point for a Flutter application.
+To get started with the project:
 
-### Useful Flutter Resources:
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)  
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)  
+```bash
+# Clone the repository
+git clone https://github.com/singhrishabh93/affirmation.git
 
-For help getting started with Flutter development, view the  
-[online documentation](https://docs.flutter.dev/), which offers tutorials,  
-samples, guidance on mobile development, and a full API reference.  
+# Navigate to the project directory
+cd affirmation
 
----
+# Install dependencies
+flutter pub get
 
-### 💡 About BeYou
-Transform your mindset today! Each day is an opportunity to embrace the power of positivity with **BeYou**. 🌟
+# Run the app
+flutter run
