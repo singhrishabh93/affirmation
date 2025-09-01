@@ -448,7 +448,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     return Scaffold(
       key: _scaffoldKey,
       body: isLoading
-          ? Center(child: Lottie.asset('assets/loader.json', height: 50),)
+          ? Center(
+              child: Lottie.asset('assets/loader.json', height: 50),
+            )
           : filteredAffirmations.isEmpty
               ? _buildEmptyState()
               : Stack(
@@ -942,66 +944,69 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
     return Column(
       children: [
+        // Position buttons at the very bottom center, above the gesture navigation bar
         Padding(
-          padding: const EdgeInsets.only(bottom: 60.0, left: 20.0, right: 20.0),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              // Left side empty - justify button will be added as a fixed overlay
-              const SizedBox(width: 40),
-
-              // Right side - Share and favorite
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 24, vertical: 12),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(30),
-                    ),
-                    child: InkWell(
-                      onTap: _shareAffirmation,
-                      child: Row(
-                        children: [
-                          const Icon(FeatherIcons.share, color: Colors.black87),
-                          const SizedBox(width: 10),
-                          Text(
-                            "Share",
-                            style: GoogleFonts.merriweather(
-                              color: Colors.black87,
-                              fontSize: 18,
-                            ),
+          padding: const EdgeInsets.only(bottom: 80.0),
+          child: Positioned(
+            bottom: 60, // Align with the hamburger menu icon level
+            left: 0,
+            right: 0,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                // Share button - smaller pill-shaped
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: Colors.black87, width: 1),
+                  ),
+                  child: InkWell(
+                    onTap: _shareAffirmation,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(FeatherIcons.share,
+                            color: Colors.black87, size: 16),
+                        const SizedBox(width: 6),
+                        Text(
+                          "Share",
+                          style: GoogleFonts.merriweather(
+                            color: Colors.black87,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
                   ),
-                  const SizedBox(width: 20),
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      shape: BoxShape.circle,
-                    ),
-                    child: InkWell(
-                      onTap: affirmation.id == currentAffirmation.id
-                          ? _toggleFavorite
-                          : null,
-                      child: Icon(
-                        affirmation.isFavorite
-                            ? Icons.favorite
-                            : Icons.favorite_border,
-                        color: affirmation.isFavorite
-                            ? Colors.red
-                            : Colors.black87,
-                        size: 28,
-                      ),
+                ),
+                const SizedBox(width: 16),
+                // Heart button - smaller circular
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Colors.black87, width: 1),
+                  ),
+                  child: InkWell(
+                    onTap: affirmation.id == currentAffirmation.id
+                        ? _toggleFavorite
+                        : null,
+                    child: Icon(
+                      affirmation.isFavorite
+                          ? Icons.favorite
+                          : Icons.favorite_border,
+                      color: affirmation.isFavorite ? Colors.red : Colors.black87,
+                      size: 20,
                     ),
                   ),
-                ],
-              ),
-            ],
+                ),
+              ],
+            ),
           ),
         ),
       ],
