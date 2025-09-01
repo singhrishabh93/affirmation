@@ -41,7 +41,15 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   int _currentPageIndex = 0;
   bool isLoading = true;
 
-  // For heart animation
+  // Enhanced heart animation controllers
+  late AnimationController _heartScaleController;
+  late AnimationController _heartOpacityController;
+  late AnimationController _heartPositionController;
+  late Animation<double> _heartScaleAnimation;
+  late Animation<double> _heartOpacityAnimation;
+  late Animation<Offset> _heartPositionAnimation;
+  
+  // Heart animation state
   bool _isShowingHeartAnimation = false;
 
   // Use colors from the app_colors.dart file
@@ -58,6 +66,46 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       viewportFraction: 1.0,
       keepPage: true,
     );
+    
+    // Initialize heart animation controllers
+    _heartScaleController = AnimationController(
+      duration: const Duration(milliseconds: 600),
+      vsync: this,
+    );
+    _heartOpacityController = AnimationController(
+      duration: const Duration(milliseconds: 800),
+      vsync: this,
+    );
+    _heartPositionController = AnimationController(
+      duration: const Duration(milliseconds: 1000),
+      vsync: this,
+    );
+    
+    // Create heart animations
+    _heartScaleAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(
+      parent: _heartScaleController,
+      curve: Curves.elasticOut,
+    ));
+    
+    _heartOpacityAnimation = Tween<double>(
+      begin: 1.0,
+      end: 0.0,
+    ).animate(CurvedAnimation(
+      parent: _heartOpacityController,
+      curve: Curves.easeOut,
+    ));
+    
+    _heartPositionAnimation = Tween<Offset>(
+      begin: Offset.zero,
+      end: const Offset(0, -0.3),
+    ).animate(CurvedAnimation(
+      parent: _heartPositionController,
+      curve: Curves.easeOutCubic,
+    ));
+    
     _loadAffirmations();
     _musicService.initialize();
 
@@ -209,26 +257,35 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   void _showHeartAnimation() {
-    setState(() {
-      _isShowingHeartAnimation = false;
-    });
-
     if (!currentAffirmation.isFavorite) {
       _toggleFavorite();
     }
 
-    Future.delayed(const Duration(milliseconds: 10), () {
+    // Reset animation state
+    _heartScaleController.reset();
+    _heartOpacityController.reset();
+    _heartPositionController.reset();
+    
+    setState(() {
+      _isShowingHeartAnimation = true;
+    });
+
+    // Start scale animation immediately
+    _heartScaleController.forward();
+    
+    // Start opacity and position animations with slight delay
+    Future.delayed(const Duration(milliseconds: 200), () {
+      if (mounted) {
+        _heartOpacityController.forward();
+        _heartPositionController.forward();
+      }
+    });
+
+    // Hide animation after completion
+    Future.delayed(const Duration(milliseconds: 1000), () {
       if (mounted) {
         setState(() {
-          _isShowingHeartAnimation = true;
-        });
-
-        Future.delayed(const Duration(milliseconds: 800), () {
-          if (mounted) {
-            setState(() {
-              _isShowingHeartAnimation = false;
-            });
-          }
+          _isShowingHeartAnimation = false;
         });
       }
     });
@@ -307,24 +364,43 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       },
                     ),
 
-                    // Heart animation overlay
+                    // Enhanced heart animation overlay
                     if (_isShowingHeartAnimation)
                       Positioned.fill(
                         child: Center(
-                          child: TweenAnimationBuilder<double>(
-                            tween: Tween<double>(begin: 0.1, end: 1.5),
-                            duration: const Duration(milliseconds: 500),
-                            curve: Curves.elasticOut,
-                            builder: (context, value, child) {
-                              return Transform.scale(
-                                scale: value,
-                                child: AnimatedOpacity(
-                                  opacity: _isShowingHeartAnimation ? 1.0 : 0.0,
-                                  duration: const Duration(milliseconds: 900),
-                                  child: const Icon(
-                                    Icons.favorite,
-                                    color: Colors.red,
-                                    size: 90,
+                          child: AnimatedBuilder(
+                            animation: Listenable.merge([
+                              _heartScaleController,
+                              _heartOpacityController,
+                              _heartPositionController,
+                            ]),
+                            builder: (context, child) {
+                              return Transform.translate(
+                                offset: Offset(
+                                  0, // Keep horizontal position centered
+                                  _heartPositionAnimation.value.dy * 100, // Reduce movement distance
+                                ),
+                                child: Transform.scale(
+                                  scale: _heartScaleAnimation.value,
+                                  child: Opacity(
+                                    opacity: _heartOpacityAnimation.value,
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.red.withOpacity(0.3),
+                                            blurRadius: 20,
+                                            spreadRadius: 5,
+                                          ),
+                                        ],
+                                      ),
+                                      child: const Icon(
+                                        Icons.favorite,
+                                        color: Colors.red,
+                                        size: 100,
+                                      ),
+                                    ),
                                   ),
                                 ),
                               );
@@ -668,6 +744,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   @override
   void dispose() {
     _pageController.dispose();
+    _heartScaleController.dispose();
+    _heartOpacityController.dispose();
+    _heartPositionController.dispose();
     _musicService.dispose();
     super.dispose();
   }
