@@ -669,26 +669,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         ),
                       ),
                     ),
-
-                    // Fixed justify icon at bottom left that doesn't move with swipe
-                    Positioned(
-                      bottom: 60,
-                      left: 20,
-                      child: Container(
-                        padding: EdgeInsets.all(4),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          shape: BoxShape.circle,
-                        ),
-                        child: IconButton(
-                          icon: const Icon(FeatherIcons.alignCenter),
-                          color: Colors.black87,
-                          onPressed: () {
-                            _showCategoriesBottomSheet();
-                          },
-                        ),
-                      ),
-                    ),
                   ],
                 ),
     );
@@ -793,17 +773,18 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
       child: Row(
         children: [
-          // Container(
-          //   decoration: BoxDecoration(
-          //     color: Colors.white,
-          //     shape: BoxShape.circle,
-          //   ),
-          //   child: IconButton(
-          //     icon: const Icon(FeatherIcons.alignCenter),
-          //     color: Colors.black87,
-          //     onPressed: _showCategoriesBottomSheet,
-          //   ),
-          // ),
+          // Category button on the left
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              shape: BoxShape.circle,
+            ),
+            child: IconButton(
+              icon: const Icon(FeatherIcons.alignCenter),
+              color: Colors.black87,
+              onPressed: _showCategoriesBottomSheet,
+            ),
+          ),
           const Spacer(),
           Container(
             decoration: BoxDecoration(
@@ -957,10 +938,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 // Share button - smaller pill-shaped
                 Container(
                   padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: BorderRadius.circular(30),
                     border: Border.all(color: Colors.black87, width: 1),
                   ),
                   child: InkWell(
@@ -969,13 +950,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         const Icon(FeatherIcons.share,
-                            color: Colors.black87, size: 16),
-                        const SizedBox(width: 6),
+                            color: Colors.black87, size: 22),
+                        const SizedBox(width: 8),
                         Text(
                           "Share",
                           style: GoogleFonts.merriweather(
                             color: Colors.black87,
-                            fontSize: 14,
+                            fontSize: 16,
                             fontWeight: FontWeight.w500,
                           ),
                         ),
@@ -986,7 +967,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 const SizedBox(width: 16),
                 // Heart button - smaller circular
                 Container(
-                  padding: const EdgeInsets.all(8),
+                  padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     shape: BoxShape.circle,
@@ -1002,7 +983,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                           : Icons.favorite_border,
                       color:
                           affirmation.isFavorite ? Colors.red : Colors.black87,
-                      size: 20,
+                      size: 26,
                     ),
                   ),
                 ),

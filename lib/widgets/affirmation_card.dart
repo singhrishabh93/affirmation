@@ -37,7 +37,8 @@ class AffirmationCard extends StatelessWidget {
           children: [
             if (affirmation.category != null)
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 margin: const EdgeInsets.only(bottom: 12),
                 decoration: BoxDecoration(
                   color: const Color(0xFFD5EAE4).withOpacity(0.5),
@@ -70,18 +71,23 @@ class AffirmationCard extends StatelessWidget {
                       onPressed: _shareAffirmation,
                       color: Colors.black54,
                       tooltip: 'Share',
+                      iconSize: 28,
+                      padding: const EdgeInsets.all(12),
                     ),
                     IconButton(
                       icon: Icon(
-                        affirmation.isFavorite 
-                            ? Icons.favorite 
+                        affirmation.isFavorite
+                            ? Icons.favorite
                             : Icons.favorite_border,
                       ),
                       onPressed: onFavoriteToggle,
-                      color: affirmation.isFavorite ? Colors.red : Colors.black54,
-                      tooltip: affirmation.isFavorite 
-                          ? 'Remove from favorites' 
+                      color:
+                          affirmation.isFavorite ? Colors.red : Colors.black54,
+                      tooltip: affirmation.isFavorite
+                          ? 'Remove from favorites'
                           : 'Add to favorites',
+                      iconSize: 28,
+                      padding: const EdgeInsets.all(12),
                     ),
                   ],
                 ),
