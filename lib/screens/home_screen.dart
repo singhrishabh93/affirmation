@@ -1000,7 +1000,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       affirmation.isFavorite
                           ? Icons.favorite
                           : Icons.favorite_border,
-                      color: affirmation.isFavorite ? Colors.red : Colors.black87,
+                      color:
+                          affirmation.isFavorite ? Colors.red : Colors.black87,
                       size: 20,
                     ),
                   ),
