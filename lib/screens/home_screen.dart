@@ -48,7 +48,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   late Animation<double> _heartScaleAnimation;
   late Animation<double> _heartOpacityAnimation;
   late Animation<Offset> _heartPositionAnimation;
-  
+
   // Heart animation state
   bool _isShowingHeartAnimation = false;
 
@@ -66,7 +66,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       viewportFraction: 1.0,
       keepPage: true,
     );
-    
+
     // Initialize heart animation controllers
     _heartScaleController = AnimationController(
       duration: const Duration(milliseconds: 600),
@@ -80,7 +80,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       duration: const Duration(milliseconds: 1000),
       vsync: this,
     );
-    
+
     // Create heart animations
     _heartScaleAnimation = Tween<double>(
       begin: 0.0,
@@ -89,7 +89,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       parent: _heartScaleController,
       curve: Curves.elasticOut,
     ));
-    
+
     _heartOpacityAnimation = Tween<double>(
       begin: 1.0,
       end: 0.0,
@@ -97,7 +97,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       parent: _heartOpacityController,
       curve: Curves.easeOut,
     ));
-    
+
     _heartPositionAnimation = Tween<Offset>(
       begin: Offset.zero,
       end: const Offset(0, -0.3),
@@ -105,7 +105,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       parent: _heartPositionController,
       curve: Curves.easeOutCubic,
     ));
-    
+
     _loadAffirmations();
     _musicService.initialize();
 
@@ -265,14 +265,14 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     _heartScaleController.reset();
     _heartOpacityController.reset();
     _heartPositionController.reset();
-    
+
     setState(() {
       _isShowingHeartAnimation = true;
     });
 
     // Start scale animation immediately
     _heartScaleController.forward();
-    
+
     // Start opacity and position animations with slight delay
     Future.delayed(const Duration(milliseconds: 200), () {
       if (mounted) {
@@ -378,7 +378,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                               return Transform.translate(
                                 offset: Offset(
                                   0, // Keep horizontal position centered
-                                  _heartPositionAnimation.value.dy * 100, // Reduce movement distance
+                                  _heartPositionAnimation.value.dy *
+                                      100, // Reduce movement distance
                                 ),
                                 child: Transform.scale(
                                   scale: _heartScaleAnimation.value,
