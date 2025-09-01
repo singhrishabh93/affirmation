@@ -30,23 +30,16 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   final MusicService _musicService = MusicService();
   final GlobalKey _screenshotKey = GlobalKey();
   late Affirmation currentAffirmation;
-  Affirmation? nextAffirmation;
-  Affirmation? previousAffirmation;
-  bool isLoading = true;
   List<Affirmation> affirmations = [];
   List<Affirmation> filteredAffirmations = []; // Track filtered affirmations
   String? currentCategory;
   bool hasMoreAffirmations =
       true; // Track if there are more affirmations to show
 
-  // History stack to track visited affirmations
-  final Queue<Affirmation> _history = Queue<Affirmation>();
-  final Queue<Affirmation> _forward = Queue<Affirmation>();
-
-  // For drag gesture tracking
-  double dragDistance = 0;
-  bool isDragging = false;
-  bool isDraggingUp = false;
+  // Page controller for smooth scrolling
+  late PageController _pageController;
+  int _currentPageIndex = 0;
+  bool isLoading = true;
 
   // For heart animation
   bool _isShowingHeartAnimation = false;
@@ -54,21 +47,18 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   // Use colors from the app_colors.dart file
   List<Color> get backgroundColors => AppColors.affirmationBackgrounds;
 
-  late Color currentColor;
-  late Color nextColor;
-  late Color previousColor;
-
   // Key for scaffold to access drawer
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
     super.initState();
+    _pageController = PageController(
+      initialPage: 0,
+      viewportFraction: 1.0,
+      keepPage: true,
+    );
     _loadAffirmations();
-    currentColor = backgroundColors[0];
-    _pickNextColor();
-    _pickPreviousColor();
-
     _musicService.initialize();
 
     // Listen for widget launches
@@ -95,27 +85,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     } catch (e) {
       print('Error updating widget: $e');
     }
-  }
-
-  void _pickNextColor() {
-    // Pick a different color than the current one
-    Color newColor;
-    do {
-      newColor = backgroundColors[Random().nextInt(backgroundColors.length)];
-    } while (newColor == currentColor && backgroundColors.length > 1);
-
-    nextColor = newColor;
-  }
-
-  void _pickPreviousColor() {
-    // Pick a different color than the current one and next one
-    Color newColor;
-    do {
-      newColor = backgroundColors[Random().nextInt(backgroundColors.length)];
-    } while ((newColor == currentColor || newColor == nextColor) &&
-        backgroundColors.length > 2);
-
-    previousColor = newColor;
   }
 
   // Get the appropriate text style for the current background
@@ -154,13 +123,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       await _musicService
           .playMusicForCategory(currentAffirmation.category ?? 'General');
 
-      // Add to history
-      _history.addLast(currentAffirmation);
-
-      // Prepare next and previous affirmations
-      _prepareNextAffirmation();
-      _preparePreviousAffirmation();
-
       hasMoreAffirmations = filteredAffirmations.length > 1;
     } else {
       // Handle case when there are no affirmations
@@ -172,93 +134,19 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     });
   }
 
-  void _prepareNextAffirmation() {
-    // Get a different affirmation for next card
-    List<Affirmation> availableAffirmations = filteredAffirmations
-        .where((a) => a.id != currentAffirmation.id)
-        .toList();
-
-    if (availableAffirmations.isEmpty) {
-      // No more affirmations available in this category
-      nextAffirmation = null;
-      hasMoreAffirmations = false;
-    } else {
-      final randomIndex = Random().nextInt(availableAffirmations.length);
-      nextAffirmation = availableAffirmations[randomIndex];
-      hasMoreAffirmations = true;
-    }
-  }
-
-  void _preparePreviousAffirmation() {
-    if (_history.length > 1) {
-      // Get the previous item from history
-      previousAffirmation = _history.elementAt(_history.length - 2);
-    } else {
-      // No previous history, create one
-      List<Affirmation> availableAffirmations = filteredAffirmations
-          .where((a) =>
-              a.id != currentAffirmation.id &&
-              (nextAffirmation == null || a.id != nextAffirmation!.id))
-          .toList();
-
-      if (availableAffirmations.isEmpty) {
-        previousAffirmation = null;
-      } else {
-        final randomIndex = Random().nextInt(availableAffirmations.length);
-        previousAffirmation = availableAffirmations[randomIndex];
-      }
-    }
-  }
-
-  void _goToNext() {
-    if (nextAffirmation != null) {
+  void _onPageChanged(int index) {
+    if (index < filteredAffirmations.length) {
       setState(() {
-        // Store current in history before moving
-        _history.addLast(nextAffirmation!);
-
-        // Move forward
-        _forward.clear(); // Clear forward history when new path is taken
-        previousAffirmation = currentAffirmation;
-        currentAffirmation = nextAffirmation!;
-        previousColor = currentColor;
-        currentColor = nextColor;
-
-        // Prepare new next
-        _prepareNextAffirmation();
-        _pickNextColor();
-
-        // Reset drag
-        dragDistance = 0;
-        isDragging = false;
+        _currentPageIndex = index;
+        currentAffirmation = filteredAffirmations[index];
       });
-    }
-  }
 
-  void _goToPrevious() {
-    if (previousAffirmation != null) {
-      setState(() {
-        // Add current to forward queue
-        _forward.addFirst(currentAffirmation);
+      // Play music for the new affirmation
+      _musicService
+          .playMusicForCategory(currentAffirmation.category ?? 'General');
 
-        // Remove current from history
-        if (_history.isNotEmpty) {
-          _history.removeLast();
-        }
-
-        // Move backward
-        nextAffirmation = currentAffirmation;
-        currentAffirmation = previousAffirmation!;
-        nextColor = currentColor;
-        currentColor = previousColor;
-
-        // Prepare new previous if available
-        _preparePreviousAffirmation();
-        _pickPreviousColor();
-
-        // Reset drag
-        dragDistance = 0;
-        isDragging = false;
-      });
+      // Update widget
+      _updateHomeScreenWidget(currentAffirmation);
     }
   }
 
@@ -320,98 +208,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     }
   }
 
-  void _animateToNext() {
-    final controller = AnimationController(
-      duration: const Duration(milliseconds: 200),
-      vsync: this,
-    );
-
-    Animation<double> animation = Tween<double>(
-      begin: dragDistance,
-      end: MediaQuery.of(context).size.height,
-    ).animate(CurvedAnimation(
-      parent: controller,
-      curve: Curves.easeOutQuint,
-    ));
-
-    animation.addListener(() {
-      setState(() {
-        dragDistance = animation.value;
-      });
-    });
-
-    animation.addStatusListener((status) {
-      if (status == AnimationStatus.completed) {
-        controller.dispose();
-        _goToNext();
-      }
-    });
-
-    controller.forward();
-  }
-
-  void _animateToPrevious() {
-    final controller = AnimationController(
-      duration: const Duration(milliseconds: 200),
-      vsync: this,
-    );
-
-    Animation<double> animation = Tween<double>(
-      begin: dragDistance,
-      end: MediaQuery.of(context).size.height,
-    ).animate(CurvedAnimation(
-      parent: controller,
-      curve: Curves.easeOutQuint,
-    ));
-
-    animation.addListener(() {
-      setState(() {
-        dragDistance = animation.value;
-      });
-    });
-
-    animation.addStatusListener((status) {
-      if (status == AnimationStatus.completed) {
-        controller.dispose();
-        _goToPrevious();
-      }
-    });
-
-    controller.forward();
-  }
-
-  void _animateBackToOriginal() {
-    final controller = AnimationController(
-      duration: const Duration(milliseconds: 300),
-      vsync: this,
-    );
-
-    Animation<double> animation = Tween<double>(
-      begin: dragDistance,
-      end: 0.0,
-    ).animate(CurvedAnimation(
-      parent: controller,
-      curve: Curves.elasticOut,
-    ));
-
-    animation.addListener(() {
-      setState(() {
-        dragDistance = animation.value;
-      });
-    });
-
-    animation.addStatusListener((status) {
-      if (status == AnimationStatus.completed) {
-        controller.dispose();
-        setState(() {
-          isDragging = false;
-        });
-      }
-    });
-
-    controller.forward();
-  }
-
   void _showHeartAnimation() {
     setState(() {
       _isShowingHeartAnimation = false;
@@ -440,11 +236,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    final screenHeight = MediaQuery.of(context).size.height;
-    final screenWidth = MediaQuery.of(context).size.width;
-    final dragThreshold =
-        screenHeight * 0.4; // 40% of screen height for card transition
-
     return Scaffold(
       key: _scaffoldKey,
       body: isLoading
@@ -455,180 +246,65 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               ? _buildEmptyState()
               : Stack(
                   children: [
-                    // Next card (positioned under current card)
-                    if (nextAffirmation != null && hasMoreAffirmations)
-                      Positioned(
-                        top: isDraggingUp ? screenHeight - dragDistance : 0,
-                        left: 0,
-                        right: 0,
-                        height: screenHeight,
-                        child: Container(
-                          color: nextColor,
-                          child: Column(
-                            children: [
-                              SizedBox(
-                                  height: MediaQuery.of(context).padding.top),
-                              SizedBox(
-                                  height: kToolbarHeight), // Space for app bar
-                              Expanded(
-                                child: Center(
-                                  child: Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 40.0),
-                                    child: Text(
-                                      nextAffirmation!.text,
-                                      style: getAffirmationTextStyle(nextColor),
-                                      textAlign: TextAlign.center,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              _buildBottomBar(nextAffirmation!, nextColor),
-                            ],
-                          ),
-                        ),
+                    // Smooth PageView for affirmations with Instagram-like physics
+                    PageView.builder(
+                      controller: _pageController,
+                      onPageChanged: _onPageChanged,
+                      physics: const ClampingScrollPhysics(
+                        parent: AlwaysScrollableScrollPhysics(),
                       ),
+                      scrollDirection: Axis.vertical,
+                      pageSnapping: true,
+                      allowImplicitScrolling: false,
+                      itemCount: filteredAffirmations.length,
+                      itemBuilder: (context, index) {
+                        final affirmation = filteredAffirmations[index];
+                        final backgroundColor =
+                            backgroundColors[index % backgroundColors.length];
 
-                    // Previous card (positioned under current card)
-                    if (previousAffirmation != null)
-                      Positioned(
-                        top: !isDraggingUp ? -screenHeight + dragDistance : 0,
-                        left: 0,
-                        right: 0,
-                        height: screenHeight,
-                        child: Container(
-                          color: previousColor,
-                          child: Column(
-                            children: [
-                              SizedBox(
-                                  height: MediaQuery.of(context).padding.top),
-                              SizedBox(
-                                  height: kToolbarHeight), // Space for app bar
-                              Expanded(
-                                child: Center(
-                                  child: Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 40.0),
-                                    child: Text(
-                                      previousAffirmation!.text,
-                                      style: getAffirmationTextStyle(
-                                          previousColor),
-                                      textAlign: TextAlign.center,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              _buildBottomBar(
-                                  previousAffirmation!, previousColor),
-                            ],
-                          ),
-                        ),
-                      ),
-
-                    // Current card with gesture detector
-                    Positioned.fill(
-                      child: GestureDetector(
-                        behavior: HitTestBehavior.opaque,
-                        onVerticalDragStart: (details) {
-                          setState(() {
-                            isDragging = true;
-                            dragDistance = 0;
-                          });
-                        },
-                        onVerticalDragUpdate: (details) {
-                          if (details.delta.dy < 0 && hasMoreAffirmations) {
-                            // Dragging up (next) - only if there are more affirmations
-                            setState(() {
-                              isDraggingUp = true;
-                              // Apply dampening factor as drag distance increases
-                              double dampening = 1.0 -
-                                  (dragDistance / (screenHeight * 0.8))
-                                      .clamp(0.0, 0.8);
-                              dragDistance += -details.delta.dy * dampening;
-                            });
-                          } else if (details.delta.dy > 0 &&
-                              _history.length > 1) {
-                            // Dragging down (previous)
-                            setState(() {
-                              isDraggingUp = false;
-                              // Apply dampening factor as drag distance increases
-                              double dampening = 1.0 -
-                                  (dragDistance / (screenHeight * 0.8))
-                                      .clamp(0.0, 0.8);
-                              dragDistance += details.delta.dy * dampening;
-                            });
-                          }
-                        },
-                        onVerticalDragEnd: (details) {
-                          // Calculate the velocity threshold based on screen height
-                          final velocityThreshold = screenHeight * 0.4;
-
-                          if (isDraggingUp && hasMoreAffirmations) {
-                            // Swiping up to next - only if there are more affirmations
-                            if (dragDistance > dragThreshold ||
-                                (details.primaryVelocity != null &&
-                                    details.primaryVelocity! <
-                                        -velocityThreshold)) {
-                              // Spring-like animation to next card
-                              _animateToNext();
-                            } else {
-                              // Spring-like animation back to original position
-                              _animateBackToOriginal();
-                            }
-                          } else if (!isDraggingUp && _history.length > 1) {
-                            // Swiping down to previous
-                            if (dragDistance > dragThreshold ||
-                                (details.primaryVelocity != null &&
-                                    details.primaryVelocity! >
-                                        velocityThreshold)) {
-                              // Spring-like animation to previous card
-                              _animateToPrevious();
-                            } else {
-                              // Spring-like animation back to original position
-                              _animateBackToOriginal();
-                            }
-                          }
-                        },
-                        onDoubleTap: _showHeartAnimation,
-                        child: Container(
-                          transform: Matrix4.translationValues(
-                              0,
-                              isDragging
-                                  ? (isDraggingUp
-                                      ? -dragDistance
-                                      : dragDistance)
-                                  : 0,
-                              0),
-                          color: currentColor,
-                          child: Column(
-                            children: [
-                              SizedBox(
-                                  height: MediaQuery.of(context).padding.top),
-                              const SizedBox(
-                                  height: kToolbarHeight), // Space for app bar
-                              Expanded(
-                                child: RepaintBoundary(
-                                  key: _screenshotKey,
-                                  child: Container(
-                                    color: currentColor,
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 40.0),
-                                    child: Center(
-                                      child: Text(
-                                        currentAffirmation.text,
-                                        style: getAffirmationTextStyle(
-                                            currentColor),
-                                        textAlign: TextAlign.center,
+                        return RepaintBoundary(
+                          child: GestureDetector(
+                            onDoubleTap: () {
+                              if (index == _currentPageIndex) {
+                                _showHeartAnimation();
+                              }
+                            },
+                            child: Container(
+                              color: backgroundColor,
+                              child: Column(
+                                children: [
+                                  SizedBox(
+                                      height:
+                                          MediaQuery.of(context).padding.top),
+                                  const SizedBox(height: kToolbarHeight),
+                                  Expanded(
+                                    child: RepaintBoundary(
+                                      key: index == _currentPageIndex
+                                          ? _screenshotKey
+                                          : null,
+                                      child: Container(
+                                        color: backgroundColor,
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 40.0),
+                                        child: Center(
+                                          child: SelectableText(
+                                            affirmation.text,
+                                            style: getAffirmationTextStyle(
+                                                backgroundColor),
+                                            textAlign: TextAlign.center,
+                                            enableInteractiveSelection: false,
+                                          ),
+                                        ),
                                       ),
                                     ),
                                   ),
-                                ),
+                                  _buildBottomBar(affirmation, backgroundColor),
+                                ],
                               ),
-                              _buildBottomBar(currentAffirmation, currentColor),
-                            ],
+                            ),
                           ),
-                        ),
-                      ),
+                        );
+                      },
                     ),
 
                     // Heart animation overlay
@@ -675,10 +351,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   Widget _buildEmptyState() {
-    final textColor = AppColors.getTextColorForBackground(currentColor);
+    final backgroundColor = backgroundColors[0];
+    final textColor = AppColors.getTextColorForBackground(backgroundColor);
 
     return Container(
-      color: currentColor,
+      color: backgroundColor,
       child: Stack(
         children: [
           Column(
@@ -725,7 +402,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: textColor,
-                            foregroundColor: currentColor,
+                            foregroundColor: backgroundColor,
                             padding: const EdgeInsets.symmetric(
                               horizontal: 26,
                               vertical: 12,
@@ -741,7 +418,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                             style: GoogleFonts.merriweather(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
-                              color: currentColor,
+                              color: backgroundColor,
                             ),
                           ),
                         ),
@@ -854,10 +531,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     // Get all affirmations
     final allAffirmations = await AffirmationService.getAffirmations();
 
-    // Clear current lists
-    _history.clear();
-    _forward.clear();
-
     // Filter based on category
     if (category == "Favorites") {
       filteredAffirmations =
@@ -906,12 +579,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     final randomIndex = Random().nextInt(filteredAffirmations.length);
     currentAffirmation = filteredAffirmations[randomIndex];
 
-    // Add to history
-    _history.addLast(currentAffirmation);
-
-    // Prepare next and previous affirmations
-    _prepareNextAffirmation();
-    _preparePreviousAffirmation();
+    // Reset page controller to first page
+    _pageController.jumpToPage(0);
+    _currentPageIndex = 0;
 
     hasMoreAffirmations = filteredAffirmations.length > 1;
 
@@ -997,6 +667,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   @override
   void dispose() {
+    _pageController.dispose();
     _musicService.dispose();
     super.dispose();
   }
