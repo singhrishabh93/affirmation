@@ -3,7 +3,7 @@ import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'package:affirmation/constants/app_colors.dart'; // Import the colors file
 import 'package:affirmation/screens/profile_screen.dart';
-import 'package:affirmation/widgets/category_bottom_sheet.dart';
+import 'package:affirmation/screens/category_page.dart';
 import 'package:feather_icons/feather_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -582,27 +582,25 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   void _showCategoriesBottomSheet() {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      isDismissible: true,
-      builder: (context) => CategoryBottomSheet(
-        currentCategory: currentCategory,
-        onCategorySelected: (category) {
-          setState(() {
-            currentCategory = category;
-          });
-          _loadAffirmationsByCategory(category);
-        },
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => CategoryPage(
+          selectedCategory: currentCategory,
+        ),
       ),
-    );
+    ).then((selectedCategory) {
+      if (selectedCategory != null) {
+        setState(() {
+          currentCategory = selectedCategory;
+        });
+        _loadAffirmationsByCategory(selectedCategory);
+      }
+    });
   }
 
   Future<void> _loadAffirmationsByCategory(String category) async {
-    setState(() {
-      isLoading = true;
-    });
-
+    // Don't show loader - directly update affirmations
     await _musicService.playMusicForCategory(category ?? 'General');
 
     // Get all affirmations
@@ -646,9 +644,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
     // Check if we have any matching affirmations
     if (filteredAffirmations.isEmpty) {
-      setState(() {
-        isLoading = false;
-      });
       return;
     }
 
@@ -662,9 +657,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
     hasMoreAffirmations = filteredAffirmations.length > 1;
 
-    setState(() {
-      isLoading = false;
-    });
+    // Update UI without loader
+    setState(() {});
   }
 
   Widget _buildBottomBar(Affirmation affirmation, Color backgroundColor) {
